@@ -1,0 +1,28 @@
+# Development database only. The app itself runs on your machine via `npm run dev`
+# so you get fast hot reload. Production uses a separate compose file where the
+# app is containerised too.
+#
+#   npm run db:up     -> start
+#   npm run db:down   -> stop
+#
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: cjt-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cjt
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: career_journey_tracker
+    ports:
+      - '5432:5432'
+    volumes:
+      - cjt-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cjt -d career_journey_tracker']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  cjt-pgdata:
