@@ -61,5 +61,8 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }
