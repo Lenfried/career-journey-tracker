@@ -6,8 +6,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "York LiteLLM",
       "options": {
-        "baseURL": "https://llm.york.cuny.edu/v1",
-        "apiKey": "{env:LITELLM_API_KEY}"
+        "baseURL": "https://llm.york.cuny.edu/v1"
       },
       "models": {
         "York-Coder": {
