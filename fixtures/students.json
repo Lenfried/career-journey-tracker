@@ -1,0 +1,2429 @@
+{
+  "version": 1,
+
+  "_comment": [
+    "DEMO DATA. Every record here is fictional. EMPLIDs are in a reserved 99xxxxxx",
+    "block and every email uses the .invalid TLD (RFC 2606) so no record here can be",
+    "confused with a real student.",
+    "",
+    "This file is the whole development dataset. It conforms to the canonical schema",
+    "in src/lib/canonical.ts — run `npm run test` after editing and the validation",
+    "test will tell you if a record drifted.",
+    "",
+    "Scenario coverage is documented in docs/canonical-schema.md and asserted in",
+    "src/lib/fixtures.test.ts. If you remove a student, check that test first: each",
+    "one is carrying a display state the UI needs to handle."
+  ],
+
+  "lookups": {
+    "programs": [
+      { "id": "prog_cs_bs", "label": "Computer Science, B.S." },
+      {
+        "id": "prog_ai_cert",
+        "label": "Artificial Intelligence, Advanced Certificate"
+      },
+      { "id": "prog_ism_bs", "label": "Information Systems Management, B.S." },
+      { "id": "prog_math_ba", "label": "Mathematics, B.A." }
+    ],
+    "noteTypes": [
+      { "id": "note_academic", "label": "Academic" },
+      { "id": "note_career", "label": "Career" },
+      { "id": "note_check_in", "label": "Check-in" },
+      { "id": "note_crisis", "label": "Crisis" },
+      { "id": "note_referral", "label": "Referral" }
+    ],
+    "milestoneTypes": [
+      { "id": "ms_internship", "label": "Internship" },
+      { "id": "ms_job", "label": "Job" },
+      { "id": "ms_research", "label": "Research" },
+      { "id": "ms_leadership", "label": "Leadership" },
+      { "id": "ms_workshop", "label": "Workshop" },
+      { "id": "ms_career_fair", "label": "Career fair" },
+      { "id": "ms_networking", "label": "Networking" }
+    ],
+    "artifactTypes": [
+      { "id": "art_resume", "label": "Résumé" },
+      { "id": "art_linkedin", "label": "LinkedIn" },
+      { "id": "art_github", "label": "GitHub" },
+      { "id": "art_portfolio", "label": "Portfolio" }
+    ]
+  },
+
+  "students": [
+    {
+      "id": "stu_okonkwo_amara",
+      "emplid": "99000001",
+      "firstName": "Amara",
+      "lastName": "Okonkwo",
+      "preferredName": null,
+      "email": "amara.okonkwo@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "senior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Helena Vance",
+      "bio": "Transferred from Queensborough in Fall 2024. Works 20 hrs/week at the campus IT help desk, which limits weekday interview availability.",
+      "updatedAt": "2026-09-11T18:20:00.000Z",
+      "goal": {
+        "statement": "Join a backend engineering team at a mid-size company working on data-heavy products.",
+        "targetIndustry": "Software / SaaS",
+        "targetRole": "Backend Software Engineer",
+        "timeline": "Full-time start by August 2027",
+        "confidence": "high",
+        "lastDiscussedAt": "2026-09-04T15:00:00.000Z",
+        "advisorNotes": "Very clear on direction. Has been consistent about this since sophomore year."
+      },
+      "skills": [
+        {
+          "id": "sk_amara_1",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": "CS 380 final project; two internships",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_amara_2",
+          "name": "Data Structures & Algorithms",
+          "category": "technical",
+          "proficiency": "advanced",
+          "evidence": "CS 235, CS 335 — A in both",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_amara_3",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "advanced",
+          "evidence": "Maintains two team repos for CS club",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_amara_4",
+          "name": "SQL",
+          "category": "technical",
+          "proficiency": "intermediate",
+          "evidence": "CS 360 Database Systems",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_amara_5",
+          "name": "Java",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": "CS 235",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_amara_6",
+          "name": "React",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": "Hackathon project, Spring 2026",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_amara_7",
+          "name": "Public speaking",
+          "category": "soft",
+          "proficiency": "intermediate",
+          "evidence": "Presented at the CS department showcase",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_amara_8",
+          "name": "Time management",
+          "category": "soft",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_amara_1",
+          "name": "python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": "Named in nearly every backend posting she has shortlisted."
+        },
+        {
+          "id": "rq_amara_2",
+          "name": "Data structures & algorithms",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Technical screens are still algorithmic at this level."
+        },
+        {
+          "id": "rq_amara_3",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Data-heavy products means schema work from week one."
+        },
+        {
+          "id": "rq_amara_4",
+          "name": "Git",
+          "category": "tool",
+          "importance": "important",
+          "rationale": null
+        },
+        {
+          "id": "rq_amara_5",
+          "name": "System design",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "Appears in the second round for most mid-size employers."
+        },
+        {
+          "id": "rq_amara_6",
+          "name": "Technical writing",
+          "category": "soft",
+          "importance": "nice-to-have",
+          "rationale": "Design docs are part of the job at her target companies."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "complete",
+          "url": null,
+          "advisorNotes": "Reviewed 2026-08-28. Strong."
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "complete",
+          "url": "https://linkedin.example/in/amara-okonkwo-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "complete",
+          "url": "https://github.example/amara-okonkwo-demo",
+          "advisorNotes": "Pinned repos have real READMEs."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "complete",
+          "url": "https://amara-okonkwo-demo.example",
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_amara_1",
+          "sessionDate": "2026-09-04",
+          "typeId": "note_career",
+          "content": "Reviewed her shortlist of 14 target companies. Narrowed to 8 that actually match the backend/data profile. Agreed she applies to all 8 before the October career fair.",
+          "followUpDate": "2026-10-02",
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "nt_amara_2",
+          "sessionDate": "2026-08-28",
+          "typeId": "note_career",
+          "content": "Résumé review. Cut the high school section, moved the internship bullets up. Quantified two of them.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "nt_amara_3",
+          "sessionDate": "2026-05-12",
+          "typeId": "note_academic",
+          "content": "Confirmed she has the credits to graduate Spring 2027. No schedule risk.",
+          "followUpDate": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_amara_1",
+          "typeId": "ms_internship",
+          "title": "Backend engineering intern, Meridian Data Systems",
+          "completedDate": "2026-08-15",
+          "description": "Ten weeks. Shipped an internal reporting endpoint that is still in use.",
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "mi_amara_2",
+          "typeId": "ms_internship",
+          "title": "Software intern, Borough Civic Tech",
+          "completedDate": "2025-08-08",
+          "description": "First internship. Mostly bug triage and test writing.",
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "mi_amara_3",
+          "typeId": "ms_leadership",
+          "title": "Vice President, York College Computer Science Club",
+          "completedDate": "2026-05-20",
+          "description": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        },
+        {
+          "id": "mi_amara_4",
+          "typeId": "ms_career_fair",
+          "title": "CUNY Tech Career Fair — Spring 2026",
+          "completedDate": "2026-03-19",
+          "description": "Spoke with 6 employers. Two follow-up emails sent.",
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "mi_amara_5",
+          "typeId": "ms_workshop",
+          "title": "Technical interview preparation workshop",
+          "completedDate": "2026-02-11",
+          "description": null,
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "mi_amara_6",
+          "typeId": "ms_research",
+          "title": "Undergraduate research assistant, distributed systems reading group",
+          "completedDate": "2025-12-10",
+          "description": "One semester, faculty-supervised.",
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_lindqvist_tobias",
+      "emplid": "99000002",
+      "firstName": "Tobias",
+      "lastName": "Lindqvist",
+      "preferredName": null,
+      "email": "tobias.lindqvist@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "freshman",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Helena Vance",
+      "bio": null,
+      "updatedAt": "2026-09-02T13:05:00.000Z",
+      "goal": null,
+      "skills": [],
+      "requiredSkills": [],
+      "artifacts": [],
+      "notes": [],
+      "milestones": []
+    },
+
+    {
+      "id": "stu_raghunathan_priya",
+      "emplid": "99000003",
+      "firstName": "Priya",
+      "lastName": "Raghunathan",
+      "preferredName": null,
+      "email": "priya.raghunathan@demo.invalid",
+      "programId": "prog_ai_cert",
+      "classification": "junior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": "Doing the AI certificate alongside a CS major. Interested in applied ML rather than research.",
+      "updatedAt": "2026-08-01T16:40:00.000Z",
+      "goal": {
+        "statement": "Work as a machine learning engineer, ideally somewhere the models actually ship to users.",
+        "targetIndustry": "Healthcare technology",
+        "targetRole": "Machine Learning Engineer",
+        "timeline": "Internship summer 2027, full-time after",
+        "confidence": "medium",
+        "lastDiscussedAt": "2026-07-30T14:00:00.000Z",
+        "advisorNotes": "Torn between ML engineering and data science. Worth another conversation."
+      },
+      "skills": [
+        {
+          "id": "sk_priya_1",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": "AI certificate coursework",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_priya_2",
+          "name": "PyTorch",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": "Deep learning course project",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_priya_3",
+          "name": "Linear algebra",
+          "category": "domain",
+          "proficiency": "intermediate",
+          "evidence": "MATH 220",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_priya_4",
+          "name": "Pandas",
+          "category": "tool",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_priya_1",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_priya_2",
+          "name": "PyTorch",
+          "category": "tool",
+          "importance": "essential",
+          "rationale": "Her three target employers all list it by name."
+        },
+        {
+          "id": "rq_priya_3",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "ML engineers spend more time in the warehouse than she expects."
+        },
+        {
+          "id": "rq_priya_4",
+          "name": "Model deployment",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "This is the gap between data science and ML engineering."
+        },
+        {
+          "id": "rq_priya_5",
+          "name": "Healthcare data privacy",
+          "category": "domain",
+          "importance": "nice-to-have",
+          "rationale": "HIPAA literacy differentiates candidates in this sector."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "needs-review",
+          "url": null,
+          "advisorNotes": "Draft sent 2026-07-30, not yet reviewed."
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "in-progress",
+          "url": "https://linkedin.example/in/priya-raghunathan-demo",
+          "advisorNotes": "Headline still says \"Student\"."
+        },
+        {
+          "typeId": "art_github",
+          "status": "complete",
+          "url": "https://github.example/priya-raghunathan-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_priya_1",
+          "sessionDate": "2026-07-30",
+          "typeId": "note_career",
+          "content": "Talked through the ML engineer vs data scientist split. She is going to read two job descriptions of each and come back with what she noticed. Also sent her résumé draft for review.",
+          "followUpDate": "2026-08-20",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "nt_priya_2",
+          "sessionDate": "2026-04-15",
+          "typeId": "note_check_in",
+          "content": "Mid-semester check-in. Coursework going well.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_priya_1",
+          "typeId": "ms_workshop",
+          "title": "Applied machine learning summer workshop",
+          "completedDate": "2026-06-26",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_priya_2",
+          "typeId": "ms_networking",
+          "title": "CUNY AI student meetup",
+          "completedDate": "2026-03-05",
+          "description": "Met two alumni working in health tech.",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_delacroix_whitfield_marcus",
+      "emplid": "99000004",
+      "firstName": "Marcus",
+      "lastName": "Delacroix-Whitfield",
+      "preferredName": null,
+      "email": "marcus.delacroix-whitfield@demo.invalid",
+      "programId": "prog_ism_bs",
+      "classification": "sophomore",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Prof. Samuel Ortiz",
+      "bio": "Switched into ISM from Business in Spring 2026. Little technical background so far.",
+      "updatedAt": "2026-09-08T19:10:00.000Z",
+      "goal": {
+        "statement": "Become a data analyst at a financial services firm.",
+        "targetIndustry": "Financial services",
+        "targetRole": "Data Analyst",
+        "timeline": "Not yet decided",
+        "confidence": "medium",
+        "lastDiscussedAt": "2026-09-08T17:30:00.000Z",
+        "advisorNotes": "Goal is realistic but the skill distance is large. Needs a sequenced plan, not a list."
+      },
+      "skills": [
+        {
+          "id": "sk_marcus_1",
+          "name": "Microsoft Excel",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": "Two years of retail inventory work",
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_marcus_1",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Every analyst posting screens on this."
+        },
+        {
+          "id": "rq_marcus_2",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_marcus_3",
+          "name": "Statistics",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": "He has not taken a stats course yet. This is the long pole."
+        },
+        {
+          "id": "rq_marcus_4",
+          "name": "Data visualisation",
+          "category": "technical",
+          "importance": "important",
+          "rationale": null
+        },
+        {
+          "id": "rq_marcus_5",
+          "name": "Tableau",
+          "category": "tool",
+          "importance": "important",
+          "rationale": "Named in most of the postings he brought in."
+        },
+        {
+          "id": "rq_marcus_6",
+          "name": "Financial markets",
+          "category": "domain",
+          "importance": "important",
+          "rationale": "Sector literacy — interviewers ask."
+        },
+        {
+          "id": "rq_marcus_7",
+          "name": "Git",
+          "category": "tool",
+          "importance": "nice-to-have",
+          "rationale": null
+        },
+        {
+          "id": "rq_marcus_8",
+          "name": "Stakeholder communication",
+          "category": "soft",
+          "importance": "important",
+          "rationale": "Analysts present to non-technical audiences constantly."
+        },
+        {
+          "id": "rq_marcus_9",
+          "name": "R",
+          "category": "language",
+          "importance": "nice-to-have",
+          "rationale": null
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": "Still the business-school version."
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_marcus_1",
+          "sessionDate": "2026-09-08",
+          "typeId": "note_career",
+          "content": "Mapped the analyst role against what he has. The gap is wide but the sequence is clear: stats course in Spring, SQL over winter break, Python after. Told him not to look at Tableau or R until those three are done.",
+          "followUpDate": "2026-11-06",
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": []
+    },
+
+    {
+      "id": "stu_tanabe_yuki",
+      "emplid": "99000005",
+      "firstName": "Yuki",
+      "lastName": "Tanabe",
+      "preferredName": null,
+      "email": "yuki.tanabe@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "junior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Helena Vance",
+      "bio": "Strong student, no stated direction yet. Says he wants to \"keep options open\".",
+      "updatedAt": "2026-09-10T14:45:00.000Z",
+      "goal": null,
+      "skills": [
+        {
+          "id": "sk_yuki_1",
+          "name": "C++",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": "CS 245, competitive programming",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_yuki_2",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_yuki_3",
+          "name": "Data Structures & Algorithms",
+          "category": "technical",
+          "proficiency": "advanced",
+          "evidence": "Placed in two ICPC-style contests",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_yuki_4",
+          "name": "Linux",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_yuki_5",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "needs-review",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "none",
+          "url": null,
+          "advisorNotes": "Declined to create one. Revisit."
+        },
+        {
+          "typeId": "art_github",
+          "status": "complete",
+          "url": "https://github.example/yuki-tanabe-demo",
+          "advisorNotes": "Contest solutions, well organised."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_yuki_1",
+          "sessionDate": "2026-09-10",
+          "typeId": "note_career",
+          "content": "Third conversation about direction and still no goal recorded. He is not avoidant, he genuinely has not decided. Suggested he treat spring as a deliberate experiment: one systems course, one ML course, and decide from there.",
+          "followUpDate": "2026-12-04",
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "nt_yuki_2",
+          "sessionDate": "2026-04-22",
+          "typeId": "note_check_in",
+          "content": "Doing well academically. Same direction question, deferred.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "nt_yuki_3",
+          "sessionDate": "2025-11-14",
+          "typeId": "note_academic",
+          "content": "Course selection for Spring 2026.",
+          "followUpDate": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_yuki_1",
+          "typeId": "ms_leadership",
+          "title": "Captain, York College competitive programming team",
+          "completedDate": "2026-05-01",
+          "description": null,
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "mi_yuki_2",
+          "typeId": "ms_workshop",
+          "title": "Open source contribution workshop",
+          "completedDate": "2026-02-20",
+          "description": null,
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_achebe_rosalind",
+      "emplid": "99000006",
+      "firstName": "Rosalind",
+      "lastName": "Achebe",
+      "preferredName": null,
+      "email": "rosalind.achebe@demo.invalid",
+      "programId": "prog_ai_cert",
+      "classification": "senior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": "Returning student, second career. Twelve years in clinical laboratory work before enrolling. Brings domain knowledge most of the cohort does not have, and is still catching up on the engineering fundamentals that the traditional-age students picked up in their first two years.",
+      "updatedAt": "2026-09-09T21:30:00.000Z",
+      "goal": {
+        "statement": "I want to build the tools that clinical labs actually use. Most of the software I worked with for twelve years was designed by people who had never set foot in a lab, and it showed — workflows that took four clicks should have taken one, alerts that everybody learned to ignore, exports that silently dropped the last row. I know exactly what is wrong with those products and I want to be the person in the room who can say so and then go implement the fix.",
+        "targetIndustry": "Clinical / diagnostic software",
+        "targetRole": "Applied ML Engineer, clinical systems",
+        "timeline": "Graduating December 2026, looking to start immediately",
+        "confidence": "high",
+        "lastDiscussedAt": "2026-09-09T19:00:00.000Z",
+        "advisorNotes": "The clearest articulation of a goal I have heard this year. Her problem is not direction, it is that she undersells the lab experience on paper."
+      },
+      "skills": [
+        {
+          "id": "sk_ros_1",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_2",
+          "name": "scikit-learn",
+          "category": "tool",
+          "proficiency": "advanced",
+          "evidence": "Capstone project",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_3",
+          "name": "PyTorch",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ros_4",
+          "name": "SQL",
+          "category": "technical",
+          "proficiency": "advanced",
+          "evidence": "Twelve years of LIMS query work",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_5",
+          "name": "Clinical laboratory operations",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": "Twelve years as a medical laboratory technologist",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_6",
+          "name": "HIPAA compliance",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": "Annual certification, 2013-2025",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_7",
+          "name": "Statistics",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": "MATH 240, plus assay validation work",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_8",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ros_9",
+          "name": "Docker",
+          "category": "tool",
+          "proficiency": "beginner",
+          "evidence": "Self-taught over the summer",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ros_10",
+          "name": "Technical writing",
+          "category": "soft",
+          "proficiency": "advanced",
+          "evidence": "Wrote SOPs and validation reports professionally",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_11",
+          "name": "Stakeholder communication",
+          "category": "soft",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ros_12",
+          "name": "Pandas",
+          "category": "tool",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ros_13",
+          "name": "R",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": "Used for assay statistics at previous employer",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ros_14",
+          "name": "Mentoring",
+          "category": "soft",
+          "proficiency": "advanced",
+          "evidence": "Trained six lab technologists",
+          "verifiedByAdvisor": true
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_ros_1",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_ros_2",
+          "name": "Machine learning fundamentals",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_ros_3",
+          "name": "HIPAA compliance",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": "Non-negotiable in this sector, and she already has it."
+        },
+        {
+          "id": "rq_ros_4",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "important",
+          "rationale": null
+        },
+        {
+          "id": "rq_ros_5",
+          "name": "Model deployment",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "The Docker work is the start of this."
+        },
+        {
+          "id": "rq_ros_6",
+          "name": "Docker",
+          "category": "tool",
+          "importance": "important",
+          "rationale": null
+        },
+        {
+          "id": "rq_ros_7",
+          "name": "Regulatory submission process",
+          "category": "domain",
+          "importance": "nice-to-have",
+          "rationale": "FDA pathway literacy for diagnostic products."
+        },
+        {
+          "id": "rq_ros_8",
+          "name": "Technical writing",
+          "category": "soft",
+          "importance": "important",
+          "rationale": null
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "needs-review",
+          "url": null,
+          "advisorNotes": "Third draft. Still buries the lab experience on page two — that experience is the whole differentiator and it needs to be at the top."
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "complete",
+          "url": "https://linkedin.example/in/rosalind-achebe-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "in-progress",
+          "url": "https://github.example/rosalind-achebe-demo",
+          "advisorNotes": "Capstone is there, needs a README."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_ros_1",
+          "sessionDate": "2026-09-09",
+          "typeId": "note_career",
+          "content": "Long session, about ninety minutes, and worth recording properly because it changed how I am going to advise her.\n\nShe came in convinced that her twelve years in the clinical lab are a liability — that employers will read the gap between her associate's degree in 2011 and her enrollment here in 2023 as a sign she is behind, and that she needs to compensate by looking as much like a traditional new graduate as possible. Her résumé reflects that belief: the lab work is compressed into four lines on the second page under \"Additional Experience\", and the first page is her coursework and two class projects.\n\nI pushed back hard on this. For a general software engineering role she might be right that the gap needs explaining. For the specific role she is targeting — applied ML on clinical systems — the lab experience is not a gap to explain, it is the entire reason a hiring manager would pick her over a twenty-two year old with a better GPA. She has validated assays. She knows what a false positive costs when a real patient is on the other end of it. She has been the person who had to work around badly designed software at two in the morning. There are maybe four people in this year's cohort who could speak credibly to any of that and she is the only one who can speak to all of it.\n\nAction items agreed: she rewrites the résumé with the lab experience first and the degree as supporting context, not the other way round. She drafts three sentences describing a specific software failure she worked around, to use as an interview story. I am connecting her with an alum at a diagnostics company — sent the introduction email after the session.\n\nShe was not fully convinced by the end. Noting that here so I remember to check whether the rewrite actually happened or whether she reverted to the old framing.",
+          "followUpDate": "2026-09-30",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "nt_ros_2",
+          "sessionDate": "2026-06-18",
+          "typeId": "note_career",
+          "content": "Capstone topic approved — anomaly detection on lab instrument output. Good alignment with her target role.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "nt_ros_3",
+          "sessionDate": "2026-02-03",
+          "typeId": "note_referral",
+          "content": "Referred to the writing centre for graduate school application essays. She later decided against applying.",
+          "followUpDate": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_ros_1",
+          "typeId": "ms_research",
+          "title": "Capstone research project: unsupervised anomaly detection on clinical laboratory instrument telemetry, with a comparison of isolation forest and autoencoder approaches on eighteen months of de-identified quality control data",
+          "completedDate": "2026-08-21",
+          "description": "Faculty-supervised. Presented to the department in August. The autoencoder approach caught two instrument drift events that the existing rule-based system missed.",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_ros_2",
+          "typeId": "ms_networking",
+          "title": "Health tech alumni panel",
+          "completedDate": "2026-04-16",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_ros_3",
+          "typeId": "ms_workshop",
+          "title": "MLOps and model deployment intensive",
+          "completedDate": "2026-07-10",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_brightwater_antonia",
+      "emplid": "99000007",
+      "firstName": "Antonia",
+      "lastName": "Brightwater",
+      "preferredName": "Nia",
+      "email": "antonia.brightwater@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "sophomore",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Prof. Samuel Ortiz",
+      "bio": "Goes by Nia. Do not use Antonia in conversation or correspondence — she has asked twice.",
+      "updatedAt": "2026-09-07T15:00:00.000Z",
+      "goal": {
+        "statement": "Front-end or product engineering somewhere I can see what I built being used.",
+        "targetIndustry": "Consumer software",
+        "targetRole": "Front-End Engineer",
+        "timeline": "Internship summer 2027",
+        "confidence": "medium",
+        "lastDiscussedAt": "2026-09-07T13:30:00.000Z",
+        "advisorNotes": null
+      },
+      "skills": [
+        {
+          "id": "sk_nia_1",
+          "name": "JavaScript",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": "CS 205, personal projects",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_nia_2",
+          "name": "React",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_nia_3",
+          "name": "CSS",
+          "category": "technical",
+          "proficiency": "advanced",
+          "evidence": "Redesigned the CS club site",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_nia_4",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "beginner",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_nia_1",
+          "name": "JavaScript",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_nia_2",
+          "name": "React",
+          "category": "tool",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_nia_3",
+          "name": "TypeScript",
+          "category": "language",
+          "importance": "important",
+          "rationale": "Effectively the default for front-end roles now."
+        },
+        {
+          "id": "rq_nia_4",
+          "name": "Accessibility",
+          "category": "domain",
+          "importance": "important",
+          "rationale": "Strong differentiator and she already cares about it."
+        },
+        {
+          "id": "rq_nia_5",
+          "name": "Data structures & algorithms",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Interview screens, regardless of the role being front-end."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "complete",
+          "url": "https://linkedin.example/in/nia-brightwater-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "in-progress",
+          "url": "https://github.example/nia-brightwater-demo",
+          "advisorNotes": "Two projects, no READMEs yet."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "needs-review",
+          "url": "https://nia-brightwater-demo.example",
+          "advisorNotes": "Looks good. Needs one case study written up rather than four screenshots."
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_nia_1",
+          "sessionDate": "2026-09-07",
+          "typeId": "note_career",
+          "content": "Portfolio walkthrough. Design sense is well ahead of her engineering fundamentals, which is the opposite of most students here. Priority for the year is CS 235 and algorithm practice, not more portfolio pieces.",
+          "followUpDate": "2026-10-19",
+          "recordedBy": "Prof. Samuel Ortiz"
+        },
+        {
+          "id": "nt_nia_2",
+          "sessionDate": "2026-03-11",
+          "typeId": "note_check_in",
+          "content": "Settling in well after switching from Graphic Design.",
+          "followUpDate": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_nia_1",
+          "typeId": "ms_leadership",
+          "title": "Design lead, York College Computer Science Club",
+          "completedDate": "2026-05-20",
+          "description": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        },
+        {
+          "id": "mi_nia_2",
+          "typeId": "ms_career_fair",
+          "title": "CUNY Tech Career Fair — Spring 2026",
+          "completedDate": "2026-03-19",
+          "description": "First career fair. Went to observe rather than apply.",
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_kostopoulos_evander",
+      "emplid": "99000008",
+      "firstName": "Evander",
+      "lastName": "Kostopoulos",
+      "preferredName": null,
+      "email": "evander.kostopoulos@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "freshman",
+      "enrollmentStatus": "enrolled",
+      "advisor": null,
+      "bio": null,
+      "updatedAt": "2026-09-05T17:25:00.000Z",
+      "goal": {
+        "statement": "Something with computers and music.",
+        "targetIndustry": null,
+        "targetRole": null,
+        "timeline": null,
+        "confidence": "low",
+        "lastDiscussedAt": null,
+        "advisorNotes": null
+      },
+      "skills": [
+        {
+          "id": "sk_evander_1",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "beginner",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_evander_2",
+          "name": "Audio production",
+          "category": "domain",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_evander_1",
+          "sessionDate": "2026-09-05",
+          "typeId": "note_check_in",
+          "content": "Intake conversation at orientation. Not yet assigned an advisor — flag for the department.",
+          "followUpDate": "2026-10-09",
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ],
+      "milestones": []
+    },
+
+    {
+      "id": "stu_benhamou_farrah",
+      "emplid": "99000009",
+      "firstName": "Farrah",
+      "lastName": "Benhamou",
+      "preferredName": null,
+      "email": "farrah.benhamou@demo.invalid",
+      "programId": "prog_ism_bs",
+      "classification": "senior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Prof. Samuel Ortiz",
+      "bio": "Part-time student, works full time as a systems administrator.",
+      "updatedAt": "2026-08-24T20:00:00.000Z",
+      "goal": {
+        "statement": "Move from systems administration into security engineering without taking a pay cut.",
+        "targetIndustry": "Information security",
+        "targetRole": "Security Engineer",
+        "timeline": "Within a year of graduating",
+        "confidence": "high",
+        "lastDiscussedAt": "2026-08-21T18:00:00.000Z",
+        "advisorNotes": "The pay constraint is real and narrows the search considerably. Worth discussing which employers pay for the transition."
+      },
+      "skills": [
+        {
+          "id": "sk_farrah_1",
+          "name": "Linux",
+          "category": "tool",
+          "proficiency": "advanced",
+          "evidence": "Six years professional",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_farrah_2",
+          "name": "Networking",
+          "category": "technical",
+          "proficiency": "advanced",
+          "evidence": "CCNA",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_farrah_3",
+          "name": "Bash",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_farrah_4",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": "Automation scripts at work",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_farrah_5",
+          "name": "Incident response",
+          "category": "domain",
+          "proficiency": "intermediate",
+          "evidence": "On-call rotation",
+          "verifiedByAdvisor": true
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_farrah_1",
+          "name": "Networking",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_farrah_2",
+          "name": "Incident response",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_farrah_3",
+          "name": "Threat modelling",
+          "category": "domain",
+          "importance": "important",
+          "rationale": "The main thing separating her from the role."
+        },
+        {
+          "id": "rq_farrah_4",
+          "name": "Cloud security",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": "Her experience is all on-premises."
+        },
+        {
+          "id": "rq_farrah_5",
+          "name": "Python",
+          "category": "language",
+          "importance": "important",
+          "rationale": null
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "complete",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "complete",
+          "url": "https://linkedin.example/in/farrah-benhamou-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": "Automation scripts would make a good public repo."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": "Not relevant for this track."
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_farrah_1",
+          "sessionDate": "2026-08-21",
+          "typeId": "note_career",
+          "content": "Discussed the cloud security gap. She is going to start the AWS security path in September. Agreed to check in once she has made a start.",
+          "followUpDate": "2026-09-04",
+          "recordedBy": "Prof. Samuel Ortiz"
+        },
+        {
+          "id": "nt_farrah_2",
+          "sessionDate": "2026-05-29",
+          "typeId": "note_academic",
+          "content": "Reduced to two courses for Fall given the work schedule. Pushes graduation to Spring 2027.",
+          "followUpDate": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_farrah_1",
+          "typeId": "ms_job",
+          "title": "Systems Administrator, Hudson Valley Health Network",
+          "completedDate": "2021-06-01",
+          "description": "Current full-time role.",
+          "recordedBy": "Prof. Samuel Ortiz"
+        },
+        {
+          "id": "mi_farrah_2",
+          "typeId": "ms_workshop",
+          "title": "Capture-the-flag security workshop",
+          "completedDate": "2026-04-04",
+          "description": null,
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_ferraro_desmond",
+      "emplid": "99000010",
+      "firstName": "Desmond",
+      "lastName": "Ferraro",
+      "preferredName": null,
+      "email": "desmond.ferraro@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "junior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Helena Vance",
+      "bio": null,
+      "updatedAt": "2026-09-06T14:10:00.000Z",
+      "goal": {
+        "statement": "Game development, or failing that anything with graphics.",
+        "targetIndustry": "Games",
+        "targetRole": "Gameplay Engineer",
+        "timeline": "After graduation, Spring 2028",
+        "confidence": "medium",
+        "lastDiscussedAt": "2026-09-06T13:00:00.000Z",
+        "advisorNotes": "Aware the games industry is a hard entry. Has a graphics-adjacent fallback in mind, which is sensible."
+      },
+      "skills": [
+        {
+          "id": "sk_des_1",
+          "name": "C++",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": "CS 245",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_des_2",
+          "name": "Unity",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": "Three game jam entries",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_des_3",
+          "name": "Linear algebra",
+          "category": "domain",
+          "proficiency": "intermediate",
+          "evidence": "MATH 220",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_des_4",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_des_1",
+          "name": "C++",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_des_2",
+          "name": "Linear algebra",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_des_3",
+          "name": "Graphics programming",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "No coursework in this yet. The main gap."
+        },
+        {
+          "id": "rq_des_4",
+          "name": "Shipped game project",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "Portfolio matters more than GPA in this industry."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "needs-review",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "complete",
+          "url": "https://github.example/desmond-ferraro-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "in-progress",
+          "url": "https://desmond-ferraro-demo.example",
+          "advisorNotes": "Game jam builds are up. Needs playable web versions."
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_des_1",
+          "sessionDate": "2026-09-06",
+          "typeId": "note_career",
+          "content": "Talked about the graphics gap. There is no graphics course offered here, so this has to be self-directed. Pointed him at a well-regarded open curriculum and suggested one substantial project rather than more jams.",
+          "followUpDate": "2026-11-13",
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_des_1",
+          "typeId": "ms_workshop",
+          "title": "48-hour game jam, Spring 2026",
+          "completedDate": "2026-04-12",
+          "description": "Team of four. Second place.",
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "mi_des_2",
+          "typeId": "ms_networking",
+          "title": "NYC game developers meetup",
+          "completedDate": "2026-06-24",
+          "description": null,
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_sorensen_ingrid",
+      "emplid": "99000011",
+      "firstName": "Ingrid",
+      "lastName": "Sørensen",
+      "preferredName": null,
+      "email": "ingrid.sorensen@demo.invalid",
+      "programId": "prog_math_ba",
+      "classification": "junior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": "Mathematics major taking CS electives. Considering the AI certificate as a second credential.",
+      "updatedAt": "2026-09-03T16:15:00.000Z",
+      "goal": {
+        "statement": "Quantitative research, either in finance or in a research lab.",
+        "targetIndustry": "Quantitative finance",
+        "targetRole": "Quantitative Analyst",
+        "timeline": "Considering a master's first",
+        "confidence": "low",
+        "lastDiscussedAt": "2026-09-03T15:00:00.000Z",
+        "advisorNotes": "Confidence is low because she has not decided between industry and graduate school, not because she doubts the direction."
+      },
+      "skills": [
+        {
+          "id": "sk_ing_1",
+          "name": "Statistics",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": "MATH 340, MATH 345",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ing_2",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ing_3",
+          "name": "R",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": "Statistics coursework",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ing_4",
+          "name": "Linear algebra",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_ing_1",
+          "name": "Statistics",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_ing_2",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": "Needs to move from intermediate to fluent."
+        },
+        {
+          "id": "rq_ing_3",
+          "name": "Stochastic processes",
+          "category": "domain",
+          "importance": "important",
+          "rationale": "Offered here in Spring. She should take it."
+        },
+        {
+          "id": "rq_ing_4",
+          "name": "C++",
+          "category": "language",
+          "importance": "nice-to-have",
+          "rationale": "Matters for the lower-latency end of the field only."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": "Would help. She has notebooks that are not public."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_ing_1",
+          "sessionDate": "2026-09-03",
+          "typeId": "note_career",
+          "content": "Industry vs graduate school. Suggested applying to both quant internships and one or two master's programmes this cycle and deciding with real offers rather than in the abstract.",
+          "followUpDate": "2026-10-15",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "nt_ing_2",
+          "sessionDate": "2026-02-19",
+          "typeId": "note_academic",
+          "content": "Discussed adding the AI certificate. Credits would fit.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_ing_1",
+          "typeId": "ms_research",
+          "title": "Summer research, applied probability reading group",
+          "completedDate": "2026-08-07",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_adjei_mensah_kwame",
+      "emplid": "99000012",
+      "firstName": "Kwame",
+      "lastName": "Adjei-Mensah",
+      "preferredName": null,
+      "email": "kwame.adjei-mensah@demo.invalid",
+      "programId": "prog_ai_cert",
+      "classification": "senior",
+      "enrollmentStatus": "graduated",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": "Completed the certificate in Spring 2026. Record kept for outcome tracking.",
+      "updatedAt": "2026-06-15T12:00:00.000Z",
+      "goal": {
+        "statement": "Data engineering at a company with a real data platform, not a spreadsheet with ambitions.",
+        "targetIndustry": "Software / SaaS",
+        "targetRole": "Data Engineer",
+        "timeline": "Achieved",
+        "confidence": "high",
+        "lastDiscussedAt": "2026-05-20T16:00:00.000Z",
+        "advisorNotes": "Placed before graduation."
+      },
+      "skills": [
+        {
+          "id": "sk_kwa_1",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_kwa_2",
+          "name": "SQL",
+          "category": "technical",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_kwa_3",
+          "name": "Apache Spark",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": "Certificate capstone",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_kwa_4",
+          "name": "Docker",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_kwa_1",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_kwa_2",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_kwa_3",
+          "name": "Apache Spark",
+          "category": "tool",
+          "importance": "important",
+          "rationale": null
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "complete",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "complete",
+          "url": "https://linkedin.example/in/kwame-adjei-mensah-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "complete",
+          "url": "https://github.example/kwame-adjei-mensah-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "needs-review",
+          "url": null,
+          "advisorNotes": "Not updated since placement. Low priority now."
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_kwa_1",
+          "sessionDate": "2026-05-20",
+          "typeId": "note_career",
+          "content": "Accepted a data engineering offer starting July. Outcome recorded.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_kwa_1",
+          "typeId": "ms_job",
+          "title": "Data Engineer, Northline Analytics",
+          "completedDate": "2026-07-06",
+          "description": "First post-graduation role.",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_kwa_2",
+          "typeId": "ms_internship",
+          "title": "Data intern, Northline Analytics",
+          "completedDate": "2025-08-22",
+          "description": "Converted to a full-time offer.",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_kwa_3",
+          "typeId": "ms_career_fair",
+          "title": "CUNY Tech Career Fair — Fall 2025",
+          "completedDate": "2025-10-16",
+          "description": "Where the Northline conversation started.",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_mendoza_rios_lucia",
+      "emplid": "99000013",
+      "firstName": "Lucia",
+      "lastName": "Mendoza-Ríos",
+      "preferredName": null,
+      "email": "lucia.mendoza-rios@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "sophomore",
+      "enrollmentStatus": "leave-of-absence",
+      "advisor": "Dr. Helena Vance",
+      "bio": "On approved leave for the 2026-27 academic year. Intends to return Fall 2027.",
+      "updatedAt": "2026-07-19T11:30:00.000Z",
+      "goal": null,
+      "skills": [
+        {
+          "id": "sk_luc_1",
+          "name": "Java",
+          "category": "language",
+          "proficiency": "beginner",
+          "evidence": "CS 235, in progress when leave began",
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_luc_2",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "beginner",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_luc_1",
+          "sessionDate": "2026-07-19",
+          "typeId": "note_check_in",
+          "content": "Leave of absence approved. Re-entry advising should happen in Summer 2027 — no action needed before then.",
+          "followUpDate": "2027-06-01",
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ],
+      "milestones": []
+    },
+
+    {
+      "id": "stu_ashworth_bartholomew",
+      "emplid": "99000014",
+      "firstName": "Bartholomew",
+      "lastName": "Ashworth",
+      "preferredName": "Bart",
+      "email": "bartholomew.ashworth@demo.invalid",
+      "programId": "prog_ism_bs",
+      "classification": "freshman",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Prof. Samuel Ortiz",
+      "bio": null,
+      "updatedAt": "2026-08-30T18:50:00.000Z",
+      "goal": {
+        "statement": "IT project management eventually, but I want to do technical work first.",
+        "targetIndustry": null,
+        "targetRole": "IT Project Manager",
+        "timeline": "Long term",
+        "confidence": "low",
+        "lastDiscussedAt": "2026-08-28T14:00:00.000Z",
+        "advisorNotes": null
+      },
+      "skills": [
+        {
+          "id": "sk_bart_1",
+          "name": "Microsoft Excel",
+          "category": "tool",
+          "proficiency": "beginner",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_bart_1",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "important",
+          "rationale": null
+        },
+        {
+          "id": "rq_bart_2",
+          "name": "Project management",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": null
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_bart_1",
+          "sessionDate": "2026-08-28",
+          "typeId": "note_academic",
+          "content": "First-semester course plan set. Asked him to come back with two job postings that look interesting so we have something concrete to work from.",
+          "followUpDate": "2026-09-11",
+          "recordedBy": "Prof. Samuel Ortiz"
+        }
+      ],
+      "milestones": []
+    },
+
+    {
+      "id": "stu_al_rashid_zainab",
+      "emplid": "99000015",
+      "firstName": "Zainab",
+      "lastName": "Al-Rashid",
+      "preferredName": null,
+      "email": "zainab.al-rashid@demo.invalid",
+      "programId": "prog_ai_cert",
+      "classification": "junior",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": null,
+      "updatedAt": "2026-09-10T20:05:00.000Z",
+      "goal": {
+        "statement": "Research engineer on a natural language team.",
+        "targetIndustry": "AI research",
+        "targetRole": "Research Engineer",
+        "timeline": "PhD or industry research, undecided",
+        "confidence": "high",
+        "lastDiscussedAt": "2026-09-10T18:00:00.000Z",
+        "advisorNotes": "Every required skill is covered. The work now is depth and publications, not breadth."
+      },
+      "skills": [
+        {
+          "id": "sk_zai_1",
+          "name": " python ",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": "Entered with stray whitespace — exercises skill-name normalisation",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_zai_2",
+          "name": "PyTorch",
+          "category": "tool",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_zai_3",
+          "name": "Natural language processing",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": "Two course projects and a reading group",
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_zai_4",
+          "name": "Linear Algebra",
+          "category": "domain",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_zai_5",
+          "name": "Technical writing",
+          "category": "soft",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_zai_1",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_zai_2",
+          "name": "PyTorch",
+          "category": "tool",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_zai_3",
+          "name": "natural language processing",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": null
+        },
+        {
+          "id": "rq_zai_4",
+          "name": "linear algebra",
+          "category": "domain",
+          "importance": "important",
+          "rationale": null
+        },
+        {
+          "id": "rq_zai_5",
+          "name": "Technical writing",
+          "category": "soft",
+          "importance": "important",
+          "rationale": "Research roles are writing roles."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "complete",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "needs-review",
+          "url": "https://linkedin.example/in/zainab-al-rashid-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "complete",
+          "url": "https://github.example/zainab-al-rashid-demo",
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "complete",
+          "url": "https://zainab-al-rashid-demo.example",
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_zai_1",
+          "sessionDate": "2026-09-10",
+          "typeId": "note_career",
+          "content": "PhD applications vs industry research. She is going to draft a statement of purpose this term regardless, since it clarifies the research interest either way.",
+          "followUpDate": "2026-10-23",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_zai_1",
+          "typeId": "ms_research",
+          "title": "Research assistant, NLP reading group",
+          "completedDate": "2026-05-15",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_zai_2",
+          "typeId": "ms_internship",
+          "title": "ML intern, Continuum Labs",
+          "completedDate": "2026-08-14",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        },
+        {
+          "id": "mi_zai_3",
+          "typeId": "ms_workshop",
+          "title": "Graduate school application workshop",
+          "completedDate": "2026-09-04",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_voznyak_oleksandr",
+      "emplid": "99000016",
+      "firstName": "Oleksandr",
+      "lastName": "Voznyak",
+      "preferredName": "Sasha",
+      "email": "oleksandr.voznyak@demo.invalid",
+      "programId": "prog_cs_bs",
+      "classification": "senior",
+      "enrollmentStatus": "withdrawn",
+      "advisor": "Dr. Helena Vance",
+      "bio": "Withdrew in Spring 2026 for financial reasons. Record retained; re-enrollment outreach is a department decision, not an advising one.",
+      "updatedAt": "2026-04-02T15:20:00.000Z",
+      "goal": {
+        "statement": "Finish the degree.",
+        "targetIndustry": null,
+        "targetRole": null,
+        "timeline": null,
+        "confidence": "low",
+        "lastDiscussedAt": "2026-03-30T17:00:00.000Z",
+        "advisorNotes": "Nine credits short."
+      },
+      "skills": [
+        {
+          "id": "sk_ole_1",
+          "name": "Java",
+          "category": "language",
+          "proficiency": "advanced",
+          "evidence": null,
+          "verifiedByAdvisor": true
+        },
+        {
+          "id": "sk_ole_2",
+          "name": "SQL",
+          "category": "technical",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        },
+        {
+          "id": "sk_ole_3",
+          "name": "Git",
+          "category": "tool",
+          "proficiency": "intermediate",
+          "evidence": null,
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "needs-review",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_ole_1",
+          "sessionDate": "2026-03-30",
+          "typeId": "note_crisis",
+          "content": "Withdrawal conversation. Referred to financial aid and to the emergency grant programme before he decided. Nine credits short of the degree.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Helena Vance"
+        },
+        {
+          "id": "nt_ole_2",
+          "sessionDate": "2026-03-12",
+          "typeId": "note_referral",
+          "content": "Referred to the student emergency fund.",
+          "followUpDate": null,
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_ole_1",
+          "typeId": "ms_internship",
+          "title": "QA intern, Riverbend Software",
+          "completedDate": "2025-08-15",
+          "description": null,
+          "recordedBy": "Dr. Helena Vance"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_chu_mei_ling",
+      "emplid": "99000017",
+      "firstName": "Mei-Ling",
+      "lastName": "Chu",
+      "preferredName": null,
+      "email": "mei-ling.chu@demo.invalid",
+      "programId": "prog_math_ba",
+      "classification": "sophomore",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": "Has a clear target role but no skills recorded yet — the skills conversation has not happened.",
+      "updatedAt": "2026-09-01T13:40:00.000Z",
+      "goal": {
+        "statement": "Actuarial work. I have already started the exam sequence.",
+        "targetIndustry": "Insurance",
+        "targetRole": "Actuarial Analyst",
+        "timeline": "Internship summer 2028",
+        "confidence": "high",
+        "lastDiscussedAt": "2026-09-01T12:30:00.000Z",
+        "advisorNotes": "Unusually decided for a sophomore. Skills inventory is the next session."
+      },
+      "skills": [],
+      "requiredSkills": [
+        {
+          "id": "rq_mei_1",
+          "name": "Probability",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": "Exam P."
+        },
+        {
+          "id": "rq_mei_2",
+          "name": "Financial mathematics",
+          "category": "domain",
+          "importance": "essential",
+          "rationale": "Exam FM."
+        },
+        {
+          "id": "rq_mei_3",
+          "name": "Microsoft Excel",
+          "category": "tool",
+          "importance": "important",
+          "rationale": "Still the working tool of the profession."
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": "Not relevant for this track."
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": "Not relevant for this track."
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_mei_1",
+          "sessionDate": "2026-09-01",
+          "typeId": "note_career",
+          "content": "Exam P scheduled for November. Next session is a full skills inventory — she has more than she has recorded.",
+          "followUpDate": "2026-11-20",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_mei_1",
+          "typeId": "ms_networking",
+          "title": "Actuarial society information session",
+          "completedDate": "2026-04-30",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    },
+
+    {
+      "id": "stu_nakamura_obi_theo",
+      "emplid": "99000018",
+      "firstName": "Theo",
+      "lastName": "Nakamura-Obi",
+      "preferredName": null,
+      "email": "theo.nakamura-obi@demo.invalid",
+      "programId": "prog_ai_cert",
+      "classification": "freshman",
+      "enrollmentStatus": "enrolled",
+      "advisor": "Dr. Maya Chen-Rivera",
+      "bio": "Exactly one of everything — the single-item case for every list in the UI.",
+      "updatedAt": "2026-09-11T10:15:00.000Z",
+      "goal": {
+        "statement": "Not sure yet, but something involving AI.",
+        "targetIndustry": null,
+        "targetRole": null,
+        "timeline": null,
+        "confidence": "low",
+        "lastDiscussedAt": "2026-09-11T10:00:00.000Z",
+        "advisorNotes": null
+      },
+      "skills": [
+        {
+          "id": "sk_theo_1",
+          "name": "Python",
+          "category": "language",
+          "proficiency": "beginner",
+          "evidence": "High school elective",
+          "verifiedByAdvisor": false
+        }
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_theo_1",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": null
+        }
+      ],
+      "artifacts": [
+        {
+          "typeId": "art_resume",
+          "status": "in-progress",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_linkedin",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_github",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        },
+        {
+          "typeId": "art_portfolio",
+          "status": "none",
+          "url": null,
+          "advisorNotes": null
+        }
+      ],
+      "notes": [
+        {
+          "id": "nt_theo_1",
+          "sessionDate": "2026-09-11",
+          "typeId": "note_check_in",
+          "content": "First advising session. Enthusiastic, no direction yet, which is exactly right for week two of freshman year.",
+          "followUpDate": "2026-10-30",
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "mi_theo_1",
+          "typeId": "ms_workshop",
+          "title": "Intro to Python workshop",
+          "completedDate": "2026-09-09",
+          "description": null,
+          "recordedBy": "Dr. Maya Chen-Rivera"
+        }
+      ]
+    }
+  ]
+}
