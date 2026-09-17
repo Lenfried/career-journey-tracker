@@ -11,6 +11,8 @@
 
 import type {
   ArtifactStatus,
+  CareerActionStatus,
+  CareerMapTerm,
   Classification,
   EnrollmentStatus,
   GoalConfidence,
@@ -64,4 +66,25 @@ export const ARTIFACT_STATUS_LABELS: Record<ArtifactStatus, string> = {
   'in-progress': 'In progress',
   'needs-review': 'Needs review',
   complete: 'Complete',
+}
+
+export const CAREER_MAP_TERM_LABELS: Record<CareerMapTerm, string> = {
+  'y1-fall': 'Year 1 · Fall',
+  'y1-spring': 'Year 1 · Spring',
+  'y1-summer': 'Summer after Year 1',
+  'y2-fall': 'Year 2 · Fall',
+  'y2-spring': 'Year 2 · Spring',
+  'y2-summer': 'Summer after Year 2',
+  'y3-fall': 'Year 3 · Fall',
+  'y3-spring': 'Year 3 · Spring',
+  'y3-summer': 'Summer after Year 3',
+  'y4-fall': 'Year 4 · Fall',
+  'y4-spring': 'Year 4 · Spring',
+}
+
+export const CAREER_ACTION_STATUS_LABELS: Record<CareerActionStatus, string> = {
+  'not-started': 'Not started',
+  'in-progress': 'In progress',
+  done: 'Done',
+  'not-applicable': 'Not applicable',
 }

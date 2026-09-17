@@ -17,6 +17,9 @@ import rawDataset from '../../fixtures/students.json'
 import {
   canonicalDatasetSchema,
   type CanonicalDataset,
+  type CareerAction,
+  type CareerMap,
+  type CareerTrack,
   type StudentRecord,
 } from './canonical'
 
@@ -67,4 +70,25 @@ export function loadStudent(id: string): StudentRecord | undefined {
 /** The lookup tables. */
 export function loadLookups() {
   return loadDataset().lookups
+}
+
+/** The action catalog — every recommended action, defined once. */
+export function loadCareerActions(): CareerAction[] {
+  return loadDataset().careerActions
+}
+
+/** One career map by id, or `undefined` when it is unknown. */
+export function loadCareerMap(id: string): CareerMap | undefined {
+  return loadDataset().careerMaps.find((map) => map.id === id)
+}
+
+/** One track by id, or `undefined`. A student with no track passes `null`. */
+export function loadCareerTrack(id: string | null): CareerTrack | undefined {
+  if (!id) return undefined
+  return loadDataset().careerTracks.find((track) => track.id === id)
+}
+
+/** Every track, for the "switch track" picker. */
+export function loadCareerTracks(): CareerTrack[] {
+  return loadDataset().careerTracks
 }

@@ -1,6 +1,5 @@
 {
   "version": 1,
-
   "_comment": [
     "DEMO DATA. Every record here is fictional. EMPLIDs are in a reserved 99xxxxxx",
     "block and every email uses the .invalid TLD (RFC 2606) so no record here can be",
@@ -12,43 +11,979 @@
     "",
     "Scenario coverage is documented in docs/canonical-schema.md and asserted in",
     "src/lib/fixtures.test.ts. If you remove a student, check that test first: each",
-    "one is carrying a display state the UI needs to handle."
+    "one is carrying a display state the UI needs to handle.",
+    "",
+    "`careerActions` is the action catalog: every recommended action defined once,",
+    "with a stable id. `careerMaps` places them in terms for everyone; `careerTracks`",
+    "layer specialisations on top by adding, moving or excluding placements. Student",
+    "progress is keyed on the action id and never on the track, which is what lets a",
+    "student change track without losing credit for what they have already done."
   ],
-
   "lookups": {
     "programs": [
-      { "id": "prog_cs_bs", "label": "Computer Science, B.S." },
+      {
+        "id": "prog_cs_bs",
+        "label": "Computer Science, B.S."
+      },
       {
         "id": "prog_ai_cert",
         "label": "Artificial Intelligence, Advanced Certificate"
       },
-      { "id": "prog_ism_bs", "label": "Information Systems Management, B.S." },
-      { "id": "prog_math_ba", "label": "Mathematics, B.A." }
+      {
+        "id": "prog_ism_bs",
+        "label": "Information Systems Management, B.S."
+      },
+      {
+        "id": "prog_math_ba",
+        "label": "Mathematics, B.A."
+      }
     ],
     "noteTypes": [
-      { "id": "note_academic", "label": "Academic" },
-      { "id": "note_career", "label": "Career" },
-      { "id": "note_check_in", "label": "Check-in" },
-      { "id": "note_crisis", "label": "Crisis" },
-      { "id": "note_referral", "label": "Referral" }
+      {
+        "id": "note_academic",
+        "label": "Academic"
+      },
+      {
+        "id": "note_career",
+        "label": "Career"
+      },
+      {
+        "id": "note_check_in",
+        "label": "Check-in"
+      },
+      {
+        "id": "note_crisis",
+        "label": "Crisis"
+      },
+      {
+        "id": "note_referral",
+        "label": "Referral"
+      }
     ],
     "milestoneTypes": [
-      { "id": "ms_internship", "label": "Internship" },
-      { "id": "ms_job", "label": "Job" },
-      { "id": "ms_research", "label": "Research" },
-      { "id": "ms_leadership", "label": "Leadership" },
-      { "id": "ms_workshop", "label": "Workshop" },
-      { "id": "ms_career_fair", "label": "Career fair" },
-      { "id": "ms_networking", "label": "Networking" }
+      {
+        "id": "ms_internship",
+        "label": "Internship"
+      },
+      {
+        "id": "ms_job",
+        "label": "Job"
+      },
+      {
+        "id": "ms_research",
+        "label": "Research"
+      },
+      {
+        "id": "ms_leadership",
+        "label": "Leadership"
+      },
+      {
+        "id": "ms_workshop",
+        "label": "Workshop"
+      },
+      {
+        "id": "ms_career_fair",
+        "label": "Career fair"
+      },
+      {
+        "id": "ms_networking",
+        "label": "Networking"
+      }
     ],
     "artifactTypes": [
-      { "id": "art_resume", "label": "Résumé" },
-      { "id": "art_linkedin", "label": "LinkedIn" },
-      { "id": "art_github", "label": "GitHub" },
-      { "id": "art_portfolio", "label": "Portfolio" }
+      {
+        "id": "art_resume",
+        "label": "Résumé"
+      },
+      {
+        "id": "art_linkedin",
+        "label": "LinkedIn"
+      },
+      {
+        "id": "art_github",
+        "label": "GitHub"
+      },
+      {
+        "id": "art_portfolio",
+        "label": "Portfolio"
+      }
+    ],
+    "actionCategories": [
+      {
+        "id": "cat_advising",
+        "label": "Advising"
+      },
+      {
+        "id": "cat_academic",
+        "label": "Academic engagement"
+      },
+      {
+        "id": "cat_materials",
+        "label": "Application materials"
+      },
+      {
+        "id": "cat_network",
+        "label": "Networking"
+      },
+      {
+        "id": "cat_experience",
+        "label": "Experience"
+      },
+      {
+        "id": "cat_skills",
+        "label": "Skill building"
+      },
+      {
+        "id": "cat_campus",
+        "label": "Campus & community"
+      }
+    ],
+    "moveReasons": [
+      {
+        "id": "move_transfer",
+        "label": "Transferred in"
+      },
+      {
+        "id": "move_late_start",
+        "label": "Joined the map late"
+      },
+      {
+        "id": "move_leave",
+        "label": "Returning from leave"
+      },
+      {
+        "id": "move_workload",
+        "label": "Course load or work schedule"
+      },
+      {
+        "id": "move_priority",
+        "label": "Moved up as a priority"
+      },
+      {
+        "id": "move_other",
+        "label": "Other — see the note"
+      }
     ]
   },
-
+  "careerActions": [
+    {
+      "id": "act_advisor_intake",
+      "title": "Meet your department advisor and walk through the four-year plan",
+      "why": "The plan only works if you know what is on it, and this is the meeting that puts a face to the person who signs off on everything later.",
+      "categoryId": "cat_advising",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "note",
+        "typeId": "note_academic"
+      },
+      "resourceUrl": "https://www.york.cuny.edu/career-services/students/four-year-college-plan"
+    },
+    {
+      "id": "act_self_assessment",
+      "title": "Complete the FOCUS 2 career self-assessment",
+      "why": "Most first-years pick a direction from the three job titles they have heard of. This is a cheap way to find the ones they have not.",
+      "categoryId": "cat_advising",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_handshake",
+      "title": "Set up your Handshake profile and upload a first resume",
+      "why": "Every campus job, workshop and employer visit is posted there. A blank profile means you never see them.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_club_join",
+      "title": "Join a CS or Math student club",
+      "why": "The cheapest way to meet the people who will tell you about an internship two years from now.",
+      "categoryId": "cat_campus",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_office_hours",
+      "title": "Go to one instructor's office hours before midterms",
+      "why": "The first visit is the hard one. Recommendation letters come from faculty who can picture your face.",
+      "categoryId": "cat_academic",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_seminar_talks",
+      "title": "Attend two Math/CS seminar talks",
+      "why": "Seeing what research and industry work actually look like is how a vague major turns into a direction.",
+      "categoryId": "cat_academic",
+      "targetCount": 2,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_workshop"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_linkedin",
+      "title": "Create a LinkedIn profile",
+      "why": "Alumni and recruiters look you up before they reply. No result is worse than a thin one.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "artifact",
+        "typeId": "art_linkedin"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_github",
+      "title": "Create a GitHub account and push your coursework to it",
+      "why": "Four years of commits is a record of how you work that no resume line can fake.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "artifact",
+        "typeId": "art_github"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_learning_center",
+      "title": "Use the Collaborative Learning Center at least once",
+      "why": "Students who get help early keep the GPA that keeps every later door open.",
+      "categoryId": "cat_academic",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_scholarship",
+      "title": "Submit one Scholarship Center application",
+      "why": "An hour of writing against a few hundred dollars is the best hourly rate on campus.",
+      "categoryId": "cat_campus",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_first_project",
+      "title": "Build and deploy one small project",
+      "why": "The first thing you can send someone a link to is worth more than the next three courses on your transcript.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_summer_course",
+      "title": "Work through one free online course in something you are curious about",
+      "why": "Summer is the only term with room to follow curiosity instead of a syllabus.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_campus_job",
+      "title": "Line up campus or local paid work for the fall",
+      "why": "Paid work you can get to on the train beats an unpaid internship you cannot afford to take.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_job"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_resume_workshop",
+      "title": "Go to a resume workshop with Career Services",
+      "why": "Resume conventions in tech change every couple of years, and the people who read them run this workshop.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_workshop"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_resume_review",
+      "title": "Get your resume reviewed until it is complete",
+      "why": "A resume nobody but you has read is a first draft.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "artifact",
+        "typeId": "art_resume"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_career_fair_first",
+      "title": "Go to the fall career fair, even with nothing to apply for yet",
+      "why": "Going once with nothing at stake is what makes the junior-year one survivable.",
+      "categoryId": "cat_network",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_career_fair"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_sophomore_programs",
+      "title": "Apply to sophomore pipeline programs — Google STEP and Microsoft Explore open in August and September",
+      "why": "These are the main funnel into junior-year internships now, and hardly any sophomore applies because nobody tells them to.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_advisor_checkin",
+      "title": "Semester check-in with your advisor",
+      "why": "Twenty minutes a term is what keeps a small problem from becoming a lost semester.",
+      "categoryId": "cat_advising",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "note",
+        "typeId": "note_check_in"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_cuny_tech_prep",
+      "title": "Apply to CUNY Tech Prep — applications close in March",
+      "why": "Free, CUNY-only, a year long, with an employer network attached. There is no better-value application on this list.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": "https://cunytechprep.org/students/apply/"
+    },
+    {
+      "id": "act_info_interview_first",
+      "title": "Interview a York alum in your field for thirty minutes",
+      "why": "Alumni answer students. The same email from a stranger goes unread.",
+      "categoryId": "cat_network",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_networking"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_internship_apps_early",
+      "title": "Apply to at least five summer internships or research programs",
+      "why": "The first round of applications is practice. Spend it in sophomore year rather than junior year.",
+      "categoryId": "cat_experience",
+      "targetCount": 5,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_local_programs",
+      "title": "Look into paid NYC programs — Break Through Tech AI and NYC LSAMP",
+      "why": "Both are paid, both are local, and neither asks you to fund a summer in another city.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": "https://jobready.nyc.gov/programs/break-through-tech-at-cuny/"
+    },
+    {
+      "id": "act_interview_prep",
+      "title": "Interview prep sprint: data-structures problems and one mock interview",
+      "why": "Junior-year postings open in August. Preparation that starts in September has started late.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_workshop"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_portfolio_start",
+      "title": "Start a portfolio page — one good README counts",
+      "why": "Somewhere to point at is the difference between saying you can build things and showing it.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "artifact",
+        "typeId": "art_portfolio"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_target_list",
+      "title": "Build a list of twenty employers and the month each one opens applications",
+      "why": "Recruiting is a calendar, not a search. Miss the window and the best-fit job was never really an option.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_internship_apps_main",
+      "title": "Apply to summer internships — most postings open August through October and close rolling",
+      "why": "Rolling means the last week of the window is nothing like the first. Early applications get read by people.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_career_fair_working",
+      "title": "Work the fall career fair with a thirty-second pitch ready",
+      "why": "The pitch is the whole event. Everything else is standing in line.",
+      "categoryId": "cat_network",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_career_fair"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_grad_check",
+      "title": "Confirm your graduation plan with your advisor",
+      "why": "A missing requirement found in junior year is an inconvenience. Found in senior spring it is a semester.",
+      "categoryId": "cat_advising",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "note",
+        "typeId": "note_academic"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_prof_association",
+      "title": "Join a professional association — ACM, NSBE, SHPE or a women-in-computing chapter",
+      "why": "Student membership costs a few dollars and the job boards behind it are not public.",
+      "categoryId": "cat_campus",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_mock_interview",
+      "title": "Do a mock interview with Career Services",
+      "why": "The first technical interview should not be one that counts.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_workshop"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_recommenders",
+      "title": "Identify two people who would write you a strong recommendation",
+      "why": "Knowing who they are is what lets you give them two months' notice instead of two weeks'.",
+      "categoryId": "cat_network",
+      "targetCount": 2,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_info_interview_more",
+      "title": "Do two more informational interviews in your target field",
+      "why": "Two conversations tell you more about a role than twenty job postings.",
+      "categoryId": "cat_network",
+      "targetCount": 2,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_networking"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_major_experience",
+      "title": "Complete an internship, research placement or a substantial project",
+      "why": "This is the line every reader of your resume looks for first.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_internship"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_resume_rewrite",
+      "title": "Rewrite your resume around what you did this summer",
+      "why": "The work is only worth what you can describe. Write it down while you still remember the details.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_newgrad_apps",
+      "title": "Apply to new-grad roles — postings open August through October, the same as internships",
+      "why": "New-grad hiring runs a year ahead of the start date. Waiting for spring means applying to what is left.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_grad_school_apps",
+      "title": "Submit graduate school applications — most CS deadlines fall December 1-15",
+      "why": "Everything a graduate application needs takes longer than you think, and all of it is due at once.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_references_ask",
+      "title": "Ask your recommenders formally, at least a month before the deadline",
+      "why": "A good letter takes time. A rushed one reads like a rushed one.",
+      "categoryId": "cat_network",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_advisor_exit",
+      "title": "Final advising meeting: graduation check and the plan after it",
+      "why": "The last meeting is where someone checks that the plan survives contact with reality.",
+      "categoryId": "cat_advising",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "note",
+        "typeId": "note_career"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_offer_review",
+      "title": "Bring any offer to an advisor before you accept it",
+      "why": "Compensation, start date and what you will actually be doing are all negotiable, and nobody tells students that.",
+      "categoryId": "cat_advising",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_portfolio_final",
+      "title": "Update LinkedIn and your portfolio with your final project work",
+      "why": "The version of you an employer finds should be the version that just graduated.",
+      "categoryId": "cat_materials",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_alumni_connect",
+      "title": "Connect with the York alumni network before you graduate",
+      "why": "Access is easiest while you are still a student, and you will want it in three years.",
+      "categoryId": "cat_network",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_networking"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_hackathon",
+      "title": "Do a hackathon — free ones run across NYC most months",
+      "why": "A weekend is enough to ship something, and the people you build it with become your network.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_workshop"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_dsa_practice",
+      "title": "Work through 150+ data-structures and algorithms problems",
+      "why": "Technical screens test a narrow skill that only repetition builds. Start the summer before, not the week before.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_open_source",
+      "title": "Make two contributions to an open-source project you actually use",
+      "why": "Public code review by strangers is the closest thing to on-the-job experience you can get for free.",
+      "categoryId": "cat_skills",
+      "targetCount": 2,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_system_design",
+      "title": "Work through a system design primer and build one project that handles real load",
+      "why": "Every new-grad backend loop asks how you would scale it, and the answer is learnable.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_math_core",
+      "title": "Take linear algebra and probability as early as your schedule allows",
+      "why": "Every machine learning course you will want later assumes both, and taking them late costs a year.",
+      "categoryId": "cat_academic",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_lab_email",
+      "title": "Email three professors about openings in their labs",
+      "why": "Getting into a lab by sophomore year is the one action that makes everything else on this track possible.",
+      "categoryId": "cat_experience",
+      "targetCount": 3,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_research"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_reu_apply",
+      "title": "Apply to NSF REU sites — deadlines cluster in February",
+      "why": "Paid summer research with housing included, and the application is mostly one essay you reuse.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": "https://www.nsf.gov/funding/opportunities/reu-research-experiences-undergraduates"
+    },
+    {
+      "id": "act_research_output",
+      "title": "Present a poster or write up a workshop paper",
+      "why": "Applications ask what you have done, and 'worked in a lab' is not an answer until something came out of it.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": {
+        "kind": "milestone",
+        "typeId": "ms_research"
+      },
+      "resourceUrl": null
+    },
+    {
+      "id": "act_grfp",
+      "title": "Consider the NSF GRFP — the CISE deadline is in late October",
+      "why": "Three years of funding, seniors are eligible, and most of them never hear about it.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": "https://www.nsf.gov/funding/opportunities/grfp-nsf-graduate-research-fellowship-program"
+    },
+    {
+      "id": "act_probability_drills",
+      "title": "Work through probability and mental-arithmetic problem sets",
+      "why": "Quant interviews test probability under time pressure, and there is no shortcut but practice.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_math_depth",
+      "title": "Take the heaviest mathematics sequence you can carry",
+      "why": "Quant hiring screens on mathematical maturity before it screens on anything else.",
+      "categoryId": "cat_academic",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_quant_sophomore_programs",
+      "title": "Apply to sophomore quant programs — Jane Street, SIG and Citadel run them in February and March",
+      "why": "These are the entry point to junior-year quant internships, and the deadlines land in sophomore spring.",
+      "categoryId": "cat_experience",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    },
+    {
+      "id": "act_competition",
+      "title": "Enter a trading competition or a Kaggle contest",
+      "why": "A ranked finish is evidence that survives a resume screen.",
+      "categoryId": "cat_skills",
+      "targetCount": 1,
+      "evidence": null,
+      "resourceUrl": null
+    }
+  ],
+  "careerMaps": [
+    {
+      "id": "map_general",
+      "version": 1,
+      "label": "CS & AI Certificate — general career map",
+      "description": "The plan every student starts on, drawn from York Career Services' four-year plan and the Math/CS department's career map. Tracks layer on top of it.",
+      "lastReviewed": "2026-09-16",
+      "placements": [
+        {
+          "actionId": "act_advisor_intake",
+          "term": "y1-fall"
+        },
+        {
+          "actionId": "act_self_assessment",
+          "term": "y1-fall"
+        },
+        {
+          "actionId": "act_handshake",
+          "term": "y1-fall"
+        },
+        {
+          "actionId": "act_club_join",
+          "term": "y1-fall"
+        },
+        {
+          "actionId": "act_office_hours",
+          "term": "y1-fall"
+        },
+        {
+          "actionId": "act_seminar_talks",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_linkedin",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_github",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_learning_center",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_scholarship",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_first_project",
+          "term": "y1-summer"
+        },
+        {
+          "actionId": "act_summer_course",
+          "term": "y1-summer"
+        },
+        {
+          "actionId": "act_campus_job",
+          "term": "y1-summer"
+        },
+        {
+          "actionId": "act_resume_workshop",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_resume_review",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_career_fair_first",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_sophomore_programs",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_advisor_checkin",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_cuny_tech_prep",
+          "term": "y2-spring"
+        },
+        {
+          "actionId": "act_info_interview_first",
+          "term": "y2-spring"
+        },
+        {
+          "actionId": "act_internship_apps_early",
+          "term": "y2-spring"
+        },
+        {
+          "actionId": "act_local_programs",
+          "term": "y2-spring"
+        },
+        {
+          "actionId": "act_interview_prep",
+          "term": "y2-summer"
+        },
+        {
+          "actionId": "act_portfolio_start",
+          "term": "y2-summer"
+        },
+        {
+          "actionId": "act_target_list",
+          "term": "y2-summer"
+        },
+        {
+          "actionId": "act_internship_apps_main",
+          "term": "y3-fall"
+        },
+        {
+          "actionId": "act_career_fair_working",
+          "term": "y3-fall"
+        },
+        {
+          "actionId": "act_grad_check",
+          "term": "y3-fall"
+        },
+        {
+          "actionId": "act_prof_association",
+          "term": "y3-fall"
+        },
+        {
+          "actionId": "act_mock_interview",
+          "term": "y3-spring"
+        },
+        {
+          "actionId": "act_recommenders",
+          "term": "y3-spring"
+        },
+        {
+          "actionId": "act_info_interview_more",
+          "term": "y3-spring"
+        },
+        {
+          "actionId": "act_major_experience",
+          "term": "y3-summer"
+        },
+        {
+          "actionId": "act_resume_rewrite",
+          "term": "y3-summer"
+        },
+        {
+          "actionId": "act_newgrad_apps",
+          "term": "y4-fall"
+        },
+        {
+          "actionId": "act_grad_school_apps",
+          "term": "y4-fall"
+        },
+        {
+          "actionId": "act_references_ask",
+          "term": "y4-fall"
+        },
+        {
+          "actionId": "act_advisor_exit",
+          "term": "y4-fall"
+        },
+        {
+          "actionId": "act_offer_review",
+          "term": "y4-spring"
+        },
+        {
+          "actionId": "act_portfolio_final",
+          "term": "y4-spring"
+        },
+        {
+          "actionId": "act_alumni_connect",
+          "term": "y4-spring"
+        }
+      ]
+    }
+  ],
+  "careerTracks": [
+    {
+      "id": "track_swe",
+      "label": "Software / backend engineering",
+      "description": "Industry software roles. Interview preparation starts a year earlier than most students expect, because postings open in August.",
+      "placements": [
+        {
+          "actionId": "act_hackathon",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_dsa_practice",
+          "term": "y2-summer"
+        },
+        {
+          "actionId": "act_open_source",
+          "term": "y3-fall"
+        },
+        {
+          "actionId": "act_system_design",
+          "term": "y4-fall"
+        },
+        {
+          "actionId": "act_mock_interview",
+          "term": "y2-summer"
+        }
+      ],
+      "excludes": []
+    },
+    {
+      "id": "track_ml_research",
+      "label": "ML research / graduate school",
+      "description": "Research and graduate school. The lever is getting into a lab early; everything else follows from having done research.",
+      "placements": [
+        {
+          "actionId": "act_math_core",
+          "term": "y1-spring"
+        },
+        {
+          "actionId": "act_lab_email",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_reu_apply",
+          "term": "y2-spring"
+        },
+        {
+          "actionId": "act_research_output",
+          "term": "y3-spring"
+        },
+        {
+          "actionId": "act_grfp",
+          "term": "y4-fall"
+        },
+        {
+          "actionId": "act_recommenders",
+          "term": "y3-fall"
+        }
+      ],
+      "excludes": ["act_sophomore_programs", "act_career_fair_working"]
+    },
+    {
+      "id": "track_quant",
+      "label": "Quantitative finance",
+      "description": "Trading and quantitative research. The sophomore-spring programs are the entry point, so this track front-loads everything.",
+      "placements": [
+        {
+          "actionId": "act_probability_drills",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_math_depth",
+          "term": "y2-fall"
+        },
+        {
+          "actionId": "act_quant_sophomore_programs",
+          "term": "y2-spring"
+        },
+        {
+          "actionId": "act_competition",
+          "term": "y3-fall"
+        },
+        {
+          "actionId": "act_mock_interview",
+          "term": "y2-spring"
+        }
+      ],
+      "excludes": []
+    }
+  ],
   "students": [
     {
       "id": "stu_okonkwo_amara",
@@ -62,6 +997,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Helena Vance",
       "bio": "Transferred from Queensborough in Fall 2024. Works 20 hrs/week at the campus IT help desk, which limits weekday interview availability.",
+      "entryTerm": "2024FA",
       "updatedAt": "2026-09-11T18:20:00.000Z",
       "goal": {
         "statement": "Join a backend engineering team at a mid-size company working on data-heavy products.",
@@ -283,9 +1219,207 @@
           "description": "One semester, faculty-supervised.",
           "recordedBy": "Prof. Samuel Ortiz"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y3-fall",
+        "trackId": "track_swe",
+        "trackSetAt": "2024-10-02T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-09-18T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-09-18T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-10-15T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-10-15T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_career_fair_first",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-10-24T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_workshop",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-11-06T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_lab_email",
+            "status": "in-progress",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-11-20T15:00:00.000Z",
+            "note": "Sat in on lab meetings for a semester before deciding industry was the better fit. Kept here so the work is not invisible after the track change."
+          },
+          {
+            "actionId": "act_advisor_checkin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-02-05T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-02-12T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_summer_course",
+            "status": "not-applicable",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-06-03T15:00:00.000Z",
+            "note": "Works 20 hrs/week at the help desk through the summer. Agreed to drop this rather than leave it sitting red all year."
+          },
+          {
+            "actionId": "act_interview_prep",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-07-22T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_mock_interview",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-07-30T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_dsa_practice",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-08-14T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_major_experience",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-08-28T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_internship_apps_main",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-10-01T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_grad_check",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-11-12T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_newgrad_apps",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-09-04T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_info_interview_first",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": "y3-spring",
+            "moveReasonId": "move_transfer",
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-03-12T15:00:00.000Z",
+            "note": "Transferred in after this was due. Did it a year late rather than not at all."
+          },
+          {
+            "actionId": "act_portfolio_start",
+            "status": "not-started",
+            "completedCount": 0,
+            "movedToTerm": "y4-fall",
+            "moveReasonId": "move_transfer",
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-09-11T15:00:00.000Z",
+            "note": "Never came up in onboarding — she arrived as a junior. Pulled into this term because it is the first thing backend interviewers ask to see."
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_lindqvist_tobias",
       "emplid": "99000002",
@@ -298,15 +1432,16 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Helena Vance",
       "bio": null,
+      "entryTerm": "2026FA",
       "updatedAt": "2026-09-02T13:05:00.000Z",
       "goal": null,
       "skills": [],
       "requiredSkills": [],
       "artifacts": [],
       "notes": [],
-      "milestones": []
+      "milestones": [],
+      "careerMap": null
     },
-
     {
       "id": "stu_raghunathan_priya",
       "emplid": "99000003",
@@ -319,6 +1454,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": "Doing the AI certificate alongside a CS major. Interested in applied ML rather than research.",
+      "entryTerm": "2024FA",
       "updatedAt": "2026-08-01T16:40:00.000Z",
       "goal": {
         "statement": "Work as a machine learning engineer, ideally somewhere the models actually ship to users.",
@@ -461,9 +1597,107 @@
           "description": "Met two alumni working in health tech.",
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_ml_research",
+        "trackSetAt": "2025-03-04T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-09-12T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-09-26T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-01-30T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-01-30T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_seminar_talks",
+            "status": "in-progress",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-04-02T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_math_core",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-05-16T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_lab_email",
+            "status": "in-progress",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-10-07T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-11-14T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_reu_apply",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-02-18T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_delacroix_whitfield_marcus",
       "emplid": "99000004",
@@ -476,6 +1710,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Prof. Samuel Ortiz",
       "bio": "Switched into ISM from Business in Spring 2026. Little technical background so far.",
+      "entryTerm": "2025FA",
       "updatedAt": "2026-09-08T19:10:00.000Z",
       "goal": {
         "statement": "Become a data analyst at a financial services firm.",
@@ -597,9 +1832,57 @@
           "recordedBy": "Prof. Samuel Ortiz"
         }
       ],
-      "milestones": []
+      "milestones": [],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-09-16T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-10-01T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-01-28T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_first_project",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-07-08T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_tanabe_yuki",
       "emplid": "99000005",
@@ -612,6 +1895,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Helena Vance",
       "bio": "Strong student, no stated direction yet. Says he wants to \"keep options open\".",
+      "entryTerm": "2024FA",
       "updatedAt": "2026-09-10T14:45:00.000Z",
       "goal": null,
       "skills": [
@@ -726,9 +2010,9 @@
           "description": null,
           "recordedBy": "Dr. Helena Vance"
         }
-      ]
+      ],
+      "careerMap": null
     },
-
     {
       "id": "stu_achebe_rosalind",
       "emplid": "99000006",
@@ -741,6 +2025,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": "Returning student, second career. Twelve years in clinical laboratory work before enrolling. Brings domain knowledge most of the cohort does not have, and is still catching up on the engineering fundamentals that the traditional-age students picked up in their first two years.",
+      "entryTerm": "2023FA",
       "updatedAt": "2026-09-09T21:30:00.000Z",
       "goal": {
         "statement": "I want to build the tools that clinical labs actually use. Most of the software I worked with for twelve years was designed by people who had never set foot in a lab, and it showed — workflows that took four clicks should have taken one, alerts that everybody learned to ignore, exports that silently dropped the last row. I know exactly what is wrong with those products and I want to be the person in the room who can say so and then go implement the fix.",
@@ -1000,9 +2285,167 @@
           "description": null,
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_ml_research",
+        "trackSetAt": "2023-11-10T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-09-20T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_self_assessment",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-09-27T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-10-04T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_club_join",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-10-11T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-02-14T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-02-14T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_math_core",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-05-20T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_lab_email",
+            "status": "done",
+            "completedCount": 3,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-09-16T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-11-01T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_reu_apply",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-02-03T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_major_experience",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-08-25T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_advisor_checkin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-02-10T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_research_output",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-04-15T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_recommenders",
+            "status": "done",
+            "completedCount": 2,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-09-08T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_grfp",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-09-09T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_brightwater_antonia",
       "emplid": "99000007",
@@ -1015,6 +2458,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Prof. Samuel Ortiz",
       "bio": "Goes by Nia. Do not use Antonia in conversation or correspondence — she has asked twice.",
+      "entryTerm": "2025FA",
       "updatedAt": "2026-09-07T15:00:00.000Z",
       "goal": {
         "statement": "Front-end or product engineering somewhere I can see what I built being used.",
@@ -1157,9 +2601,97 @@
           "description": "First career fair. Went to observe rather than apply.",
           "recordedBy": "Prof. Samuel Ortiz"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_swe",
+        "trackSetAt": "2026-02-11T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-09-15T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-09-29T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_club_join",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-10-06T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-02-12T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-02-12T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_seminar_talks",
+            "status": "in-progress",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-03-05T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_hackathon",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-03-21T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_workshop",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-09-10T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_kostopoulos_evander",
       "emplid": "99000008",
@@ -1172,6 +2704,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": null,
       "bio": null,
+      "entryTerm": "2026FA",
       "updatedAt": "2026-09-05T17:25:00.000Z",
       "goal": {
         "statement": "Something with computers and music.",
@@ -1219,9 +2752,37 @@
           "recordedBy": "Dr. Helena Vance"
         }
       ],
-      "milestones": []
+      "milestones": [],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-09-04T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-09-11T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_benhamou_farrah",
       "emplid": "99000009",
@@ -1234,6 +2795,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Prof. Samuel Ortiz",
       "bio": "Part-time student, works full time as a systems administrator.",
+      "entryTerm": "2023FA",
       "updatedAt": "2026-08-24T20:00:00.000Z",
       "goal": {
         "statement": "Move from systems administration into security engineering without taking a pay cut.",
@@ -1384,9 +2946,107 @@
           "description": null,
           "recordedBy": "Prof. Samuel Ortiz"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2023-09-19T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2023-10-03T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2024-02-08T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2024-02-08T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_career_fair_first",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2024-10-22T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2024-11-20T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_major_experience",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-08-22T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_internship_apps_main",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2025-09-30T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_newgrad_apps",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Prof. Samuel Ortiz",
+            "markedAt": "2026-08-24T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_ferraro_desmond",
       "emplid": "99000010",
@@ -1399,6 +3059,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Helena Vance",
       "bio": null,
+      "entryTerm": "2024FA",
       "updatedAt": "2026-09-06T14:10:00.000Z",
       "goal": {
         "statement": "Game development, or failing that anything with graphics.",
@@ -1526,9 +3187,57 @@
           "description": null,
           "recordedBy": "Dr. Helena Vance"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_swe",
+        "trackSetAt": "2025-04-08T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-09-13T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2024-10-08T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-03-19T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": "y3-fall",
+            "moveReasonId": "move_workload",
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-09-09T15:00:00.000Z",
+            "note": "Working 25 hrs/week and the resume slipped two terms. Moved into this term so it is the next thing we do, not a red mark from last year."
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_sorensen_ingrid",
       "emplid": "99000011",
@@ -1541,6 +3250,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": "Mathematics major taking CS electives. Considering the AI certificate as a second credential.",
+      "entryTerm": "2024FA",
       "updatedAt": "2026-09-03T16:15:00.000Z",
       "goal": {
         "statement": "Quantitative research, either in finance or in a research lab.",
@@ -1668,9 +3378,97 @@
           "description": null,
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_quant",
+        "trackSetAt": "2025-09-18T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-09-10T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-09-24T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-02-06T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_math_depth",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-09-30T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-10-16T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_career_fair_first",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-10-23T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_probability_drills",
+            "status": "in-progress",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-01-22T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_quant_sophomore_programs",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-03-05T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_adjei_mensah_kwame",
       "emplid": "99000012",
@@ -1683,6 +3481,7 @@
       "enrollmentStatus": "graduated",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": "Completed the certificate in Spring 2026. Record kept for outcome tracking.",
+      "entryTerm": "2022FA",
       "updatedAt": "2026-06-15T12:00:00.000Z",
       "goal": {
         "statement": "Data engineering at a company with a real data platform, not a spreadsheet with ambitions.",
@@ -1811,9 +3610,107 @@
           "description": "Where the Northline conversation started.",
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_swe",
+        "trackSetAt": "2023-02-15T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2022-09-14T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2022-09-28T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-02-01T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-02-01T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_resume_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2023-11-08T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_major_experience",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-08-15T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_newgrad_apps",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-10-20T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_advisor_exit",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-05-06T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_offer_review",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-05-20T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_mendoza_rios_lucia",
       "emplid": "99000013",
@@ -1826,6 +3723,7 @@
       "enrollmentStatus": "leave-of-absence",
       "advisor": "Dr. Helena Vance",
       "bio": "On approved leave for the 2026-27 academic year. Intends to return Fall 2027.",
+      "entryTerm": "2025FA",
       "updatedAt": "2026-07-19T11:30:00.000Z",
       "goal": null,
       "skills": [
@@ -1883,9 +3781,57 @@
           "recordedBy": "Dr. Helena Vance"
         }
       ],
-      "milestones": []
+      "milestones": [],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-09-18T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_handshake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2025-10-02T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_advisor_checkin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-06-30T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_career_fair_first",
+            "status": "not-started",
+            "completedCount": 0,
+            "movedToTerm": "y2-spring",
+            "moveReasonId": "move_leave",
+            "markedBy": "Dr. Helena Vance",
+            "markedAt": "2026-07-02T15:00:00.000Z",
+            "note": "On leave through the fall fair. Picking it up when she is back."
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_ashworth_bartholomew",
       "emplid": "99000014",
@@ -1898,6 +3844,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Prof. Samuel Ortiz",
       "bio": null,
+      "entryTerm": "2026FA",
       "updatedAt": "2026-08-30T18:50:00.000Z",
       "goal": {
         "statement": "IT project management eventually, but I want to do technical work first.",
@@ -1970,9 +3917,9 @@
           "recordedBy": "Prof. Samuel Ortiz"
         }
       ],
-      "milestones": []
+      "milestones": [],
+      "careerMap": null
     },
-
     {
       "id": "stu_al_rashid_zainab",
       "emplid": "99000015",
@@ -1985,6 +3932,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": null,
+      "entryTerm": "2024FA",
       "updatedAt": "2026-09-10T20:05:00.000Z",
       "goal": {
         "statement": "Research engineer on a natural language team.",
@@ -2135,9 +4083,97 @@
           "description": null,
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": "track_ml_research",
+        "trackSetAt": "2025-10-14T15:00:00.000Z",
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2024-09-11T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_linkedin",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-02-20T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_github",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-02-20T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_seminar_talks",
+            "status": "done",
+            "completedCount": 2,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-04-10T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_math_core",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-05-14T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_lab_email",
+            "status": "done",
+            "completedCount": 3,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2025-11-05T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_reu_apply",
+            "status": "not-applicable",
+            "completedCount": 0,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-02-25T15:00:00.000Z",
+            "note": "Could not commit to a summer away from home. Took the on-campus lab placement instead, which covers the same ground."
+          },
+          {
+            "actionId": "act_major_experience",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-08-20T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     },
-
     {
       "id": "stu_voznyak_oleksandr",
       "emplid": "99000016",
@@ -2150,6 +4186,7 @@
       "enrollmentStatus": "withdrawn",
       "advisor": "Dr. Helena Vance",
       "bio": "Withdrew in Spring 2026 for financial reasons. Record retained; re-enrollment outreach is a department decision, not an advising one.",
+      "entryTerm": "2023FA",
       "updatedAt": "2026-04-02T15:20:00.000Z",
       "goal": {
         "statement": "Finish the degree.",
@@ -2240,9 +4277,9 @@
           "description": null,
           "recordedBy": "Dr. Helena Vance"
         }
-      ]
+      ],
+      "careerMap": null
     },
-
     {
       "id": "stu_chu_mei_ling",
       "emplid": "99000017",
@@ -2255,6 +4292,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": "Has a clear target role but no skills recorded yet — the skills conversation has not happened.",
+      "entryTerm": "2025FA",
       "updatedAt": "2026-09-01T13:40:00.000Z",
       "goal": {
         "statement": "Actuarial work. I have already started the exam sequence.",
@@ -2334,9 +4372,9 @@
           "description": null,
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": null
     },
-
     {
       "id": "stu_nakamura_obi_theo",
       "emplid": "99000018",
@@ -2349,6 +4387,7 @@
       "enrollmentStatus": "enrolled",
       "advisor": "Dr. Maya Chen-Rivera",
       "bio": "Exactly one of everything — the single-item case for every list in the UI.",
+      "entryTerm": "2026FA",
       "updatedAt": "2026-09-11T10:15:00.000Z",
       "goal": {
         "statement": "Not sure yet, but something involving AI.",
@@ -2423,7 +4462,36 @@
           "description": null,
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
-      ]
+      ],
+      "careerMap": {
+        "mapId": "map_general",
+        "mapVersion": 1,
+        "startedTerm": "y1-fall",
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": [
+          {
+            "actionId": "act_advisor_intake",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-09-08T15:00:00.000Z",
+            "note": null
+          },
+          {
+            "actionId": "act_club_join",
+            "status": "done",
+            "completedCount": 1,
+            "movedToTerm": null,
+            "moveReasonId": null,
+            "markedBy": "Dr. Maya Chen-Rivera",
+            "markedAt": "2026-09-11T15:00:00.000Z",
+            "note": null
+          }
+        ]
+      }
     }
   ]
 }

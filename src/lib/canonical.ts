@@ -107,11 +107,258 @@ export const lookupsSchema = z.strictObject({
   milestoneTypes: z.array(lookupItemSchema),
   /** Ordered — the readiness checklist renders in this order. */
   artifactTypes: z.array(lookupItemSchema),
+  /** Ordered — career map actions group under these, in this order. */
+  actionCategories: z.array(lookupItemSchema),
+  /**
+   * Why an advisor moved a career map action to a different term. A lookup and
+   * not a union: "transferred in" and "course load" are the two everyone
+   * expects, and the third one will arrive from an advisor, not a developer.
+   */
+  moveReasons: z.array(lookupItemSchema),
 })
 
 export type LookupItem = z.infer<typeof lookupItemSchema>
 export type Lookups = z.infer<typeof lookupsSchema>
 export type LookupName = keyof Lookups
+
+/* -------------------------------------------------------------------------- */
+/* Career map                                                                  */
+/*                                                                            */
+/* A department-authored plan of recommended career actions laid out across    */
+/* the eleven terms of a four-year degree. It is three separate pieces on      */
+/* purpose:                                                                    */
+/*                                                                            */
+/*   1. `careerActions` — the catalog. Every action is defined ONCE, with a     */
+/*      stable id, no matter how many tracks recommend it. This is what lets a  */
+/*      student change track without losing credit for work already done:       */
+/*      progress is keyed on the action id, and the same id is the same action  */
+/*      everywhere. Defining "do a mock interview" separately inside each track */
+/*      would silently uncheck it the day a student switched.                   */
+/*   2. `careerMaps` — the general plan every student gets: which action sits   */
+/*      in which term.                                                          */
+/*   3. `careerTracks` — a specialisation (backend, ML research, quant) layered */
+/*      ON TOP of the general plan rather than replacing it. A track may add an */
+/*      action, exclude one that does not apply to it, or move one to a         */
+/*      different term. It may not restate what an action says — that lives in  */
+/*      the catalog, once, so a wording fix reaches every track at the same     */
+/*      time.                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The eleven terms of the map, in order.
+ *
+ * Summers are in, and they carry real work. Internship and new-grad postings
+ * open in August, so the summer before junior year is when preparation has to
+ * happen — treating summer as a gap puts the prep after the wave it was meant
+ * to prepare for.
+ *
+ * Ordered: `CAREER_MAP_TERMS.indexOf(term)` is a position on the timeline, so
+ * this is a union rather than a lookup table. Adding a fifth year is a design
+ * change, not configuration.
+ */
+export const CAREER_MAP_TERMS = [
+  'y1-fall',
+  'y1-spring',
+  'y1-summer',
+  'y2-fall',
+  'y2-spring',
+  'y2-summer',
+  'y3-fall',
+  'y3-spring',
+  'y3-summer',
+  'y4-fall',
+  'y4-spring',
+] as const
+
+/**
+ * Where a student is against an action.
+ *
+ * Advisor-set. There is no student self-service — an action is complete when an
+ * advisor confirms it in a meeting, which is why every progress row records who
+ * marked it and when.
+ *
+ * `not-applicable` is one state rather than three (skipped / waived / exempt)
+ * because they are the same UI need — stop counting this against the student —
+ * and three words for one need get used inconsistently. It carries a reason.
+ */
+export const CAREER_ACTION_STATUSES = [
+  'not-started',
+  'in-progress',
+  'done',
+  'not-applicable',
+] as const
+
+/**
+ * Where an action's evidence hint comes from.
+ *
+ * The app already records most of what the map recommends: a career fair is a
+ * milestone, a LinkedIn profile is a readiness artifact, an advising meeting is
+ * a note. An action can point at one of those, and the service layer counts
+ * matching records and shows the advisor "2 networking milestones logged".
+ *
+ * A hint is a hint. It never marks an action done on its own — the advisor
+ * still confirms — because the one thing worse than an advisor ticking a box is
+ * the app ticking it for them and being wrong.
+ */
+export const EVIDENCE_KINDS = ['milestone', 'artifact', 'note'] as const
+
+export const careerMapTermSchema = z.enum(CAREER_MAP_TERMS)
+export const careerActionStatusSchema = z.enum(CAREER_ACTION_STATUSES)
+export const evidenceKindSchema = z.enum(EVIDENCE_KINDS)
+
+export type CareerMapTerm = z.infer<typeof careerMapTermSchema>
+export type CareerActionStatus = z.infer<typeof careerActionStatusSchema>
+export type EvidenceKind = z.infer<typeof evidenceKindSchema>
+
+/** A CUNY-style academic term code: `2026FA`, `2027SP`, `2027SU`. */
+export const academicTermSchema = z.string().regex(/^\d{4}(FA|SP|SU)$/)
+
+/** Where an action's completion can be corroborated from existing records. */
+export const actionEvidenceSchema = z.strictObject({
+  kind: evidenceKindSchema,
+  /** A milestone type, artifact type or note type id — a lookup row. */
+  typeId: z.string().min(1),
+})
+
+/**
+ * One recommended action, defined once and referenced by every map and track
+ * that recommends it.
+ */
+export const careerActionSchema = z.strictObject({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  /**
+   * Why this is worth doing, in one line. The paper career maps all omit this,
+   * and it is most of what makes a student act on a row rather than skim it.
+   */
+  why: z.string().min(1),
+  categoryId: z.string().min(1),
+  /** How many times. 1 for most things, 2 for "attend two seminar talks". */
+  targetCount: z.number().int().positive(),
+  evidence: actionEvidenceSchema.nullable(),
+  resourceUrl: z.url().nullable(),
+})
+
+/** An action placed in a term. The unit both maps and tracks are built from. */
+export const careerActionPlacementSchema = z.strictObject({
+  actionId: z.string().min(1),
+  term: careerMapTermSchema,
+})
+
+/** The general plan. Everyone gets this; tracks layer on top of it. */
+export const careerMapSchema = z.strictObject({
+  id: z.string().min(1),
+  /**
+   * Bumped whenever a placement is added, removed or moved. A student pins the
+   * version they were assigned, so editing the map never silently rewrites what
+   * someone already partway through was asked to do — the catalog-year rule
+   * that degree audits have used for decades.
+   */
+  version: z.number().int().positive(),
+  label: z.string().min(1),
+  description: z.string().min(1),
+  /**
+   * Half of this advice has a date in it — application windows move every year.
+   * This is the date a human last checked that the content is still true.
+   */
+  lastReviewed: calendarDateSchema,
+  placements: z.array(careerActionPlacementSchema),
+})
+
+/**
+ * A specialisation layered over the general map.
+ *
+ * Three operations, and only three: `placements` adds an action, or moves one
+ * the general map already places; `excludes` drops one that does not apply.
+ * Nothing here can change what an action *says*.
+ */
+export const careerTrackSchema = z.strictObject({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  description: z.string().min(1),
+  placements: z.array(careerActionPlacementSchema),
+  excludes: z.array(z.string().min(1)),
+})
+
+/**
+ * One advisor's call on one action, for one student — both what state it is in
+ * and, when they have moved it, which term it belongs in for this student.
+ *
+ * Status and placement live in one row because they are the same thing from the
+ * advisor's side: a per-student override of the template, made in a meeting,
+ * with a name against it.
+ */
+export const careerActionProgressSchema = z
+  .strictObject({
+    actionId: z.string().min(1),
+    status: careerActionStatusSchema,
+    /** Against the action's `targetCount`. 0 unless the action is countable. */
+    completedCount: z.number().int().min(0),
+    /**
+     * The term this action belongs in for this student, overriding the template.
+     *
+     * This is what onboarding a transfer student looks like. The map says the
+     * informational interview was a Year 2 job; the student arrived in Year 3;
+     * the advisor pulls the ones that still matter into the current term and
+     * leaves the rest in history. Same mechanism carries a missed action forward
+     * for anyone whose course load or job got in the way.
+     *
+     * `null` means the template's own placement stands.
+     */
+    movedToTerm: careerMapTermSchema.nullable(),
+    /** A `moveReasons` lookup id. Set with `movedToTerm`, `null` without it. */
+    moveReasonId: z.string().nullable(),
+    /** The advisor who last touched the row. FERPA: who said so, and when. */
+    markedBy: z.string().min(1),
+    markedAt: timestampSchema,
+    /** Required in practice for `not-applicable` — why it was waived. */
+    note: z.string().nullable(),
+  })
+  // A move without a reason is how a per-student plan becomes undocumented.
+  // Next year's advisor inherits the student, not the conversation.
+  .refine((row) => (row.movedToTerm === null) === (row.moveReasonId === null), {
+    message: 'movedToTerm and moveReasonId must be set together',
+  })
+
+/**
+ * A student's assignment to the map.
+ *
+ * Progress is sparse — only actions an advisor has actually touched appear, and
+ * the service layer fills the rest in at `not-started`, the same way the
+ * readiness checklist fills missing artifact rows.
+ *
+ * Progress is keyed on action id and never on track, which is the whole point:
+ * change `trackId` and every shared action stays exactly as it was. Rows for
+ * actions the new track does not include are kept, not deleted — a sophomore
+ * who spent a year on research before switching to industry did that work, and
+ * erasing it punishes exactly the exploration this tool exists to encourage.
+ */
+export const studentCareerMapSchema = z.strictObject({
+  mapId: z.string().min(1),
+  /** Pinned at assignment. See `careerMapSchema.version`. */
+  mapVersion: z.number().int().positive(),
+  /**
+   * The term this student joined the map.
+   *
+   * Everything before it is history, not homework: a transfer who arrived in
+   * Year 3 was never asked to do the Year 1 actions, and showing them two years
+   * of red is both wrong and the fastest way to lose a student's trust in the
+   * plan. Those terms still render — an advisor can see what was skipped, and
+   * pull anything that still matters forward with `movedToTerm`.
+   */
+  startedTerm: careerMapTermSchema,
+  trackId: z.string().nullable(),
+  trackSetAt: timestampSchema.nullable(),
+  progress: z.array(careerActionProgressSchema),
+})
+
+export type ActionEvidence = z.infer<typeof actionEvidenceSchema>
+export type CareerAction = z.infer<typeof careerActionSchema>
+export type CareerActionPlacement = z.infer<typeof careerActionPlacementSchema>
+export type CareerMap = z.infer<typeof careerMapSchema>
+export type CareerTrack = z.infer<typeof careerTrackSchema>
+export type CareerActionProgress = z.infer<typeof careerActionProgressSchema>
+export type StudentCareerMap = z.infer<typeof studentCareerMapSchema>
 
 /* -------------------------------------------------------------------------- */
 /* The seven data groups                                                       */
@@ -132,6 +379,18 @@ export const studentIdentitySchema = z.strictObject({
   enrollmentStatus: enrollmentStatusSchema,
   advisor: z.string().min(1).nullable(),
   bio: z.string().nullable(),
+  /**
+   * The term the student started at York — `2024FA` for a transfer who arrived
+   * in fall 2024, not the term they would have started as a freshman.
+   *
+   * The career map does not derive a student's position from this today (see
+   * `deriveMapPosition` in the career-map feature, which trusts `classification`
+   * because the registrar maintains it and it never disagrees with the rest of
+   * the app). It is here because it is the fact a real import carries, and
+   * because "entered 2023FA, still classified sophomore" is the signal that
+   * someone is part-time or has stopped out — which an advisor wants to see.
+   */
+  entryTerm: academicTermSchema,
   updatedAt: timestampSchema,
 })
 
@@ -206,14 +465,23 @@ export const studentRecordSchema = studentIdentitySchema.extend({
   artifacts: z.array(readinessArtifactSchema),
   notes: z.array(advisingNoteSchema),
   milestones: z.array(careerMilestoneSchema),
+  /** `null` until an advisor assigns the map. */
+  careerMap: studentCareerMapSchema.nullable(),
 })
 
-/** Group 7 — the lookups, plus every student. This is the whole dataset. */
+/**
+ * Group 7 — the lookups, the career map template, plus every student. This is
+ * the whole dataset.
+ */
 export const canonicalDatasetSchema = z.strictObject({
   version: z.number().int().positive(),
   /** JSON has no comments. This is the fixture file's header note; ignored. */
   _comment: z.array(z.string()).optional(),
   lookups: lookupsSchema,
+  /** Every action, defined once. Maps and tracks reference these by id. */
+  careerActions: z.array(careerActionSchema),
+  careerMaps: z.array(careerMapSchema),
+  careerTracks: z.array(careerTrackSchema),
   students: z.array(studentRecordSchema),
 })
 
