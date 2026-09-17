@@ -8,7 +8,7 @@ import type {
 import {
   addRequiredSkill,
   applyMapPlacements,
-  applySpecializationOverlay,
+  applySpecializationActionOverride,
   createCareerAction,
   createCareerSpecialization,
   deleteCareerAction,
@@ -19,7 +19,6 @@ import {
   slugify,
   updateCareerAction,
   updateCareerSpecializationDetails,
-  type SpecializationOverride,
 } from './admin'
 
 const action = (
@@ -281,18 +280,48 @@ describe('describeSpecializationUsage', () => {
   })
 })
 
-describe('applySpecializationOverlay', () => {
-  it('rebuilds placements and excludes from a full override map', () => {
-    const next = applySpecializationOverlay(
+describe('applySpecializationActionOverride', () => {
+  it('moves one action without changing the other overlay rules', () => {
+    const next = applySpecializationActionOverride(
       SPECIALIZATION,
-      new Map<string, SpecializationOverride>([
-        ['act_a', 'excluded'],
-        ['act_b', 'default'], // clears the existing exclude
-        ['act_c', 'y3-fall'],
-      ]),
+      'act_c',
+      'y3-fall',
     )
-    expect(next.excludes).toEqual(['act_a'])
+    expect(next.excludes).toEqual(SPECIALIZATION.excludes)
     expect(next.placements).toEqual([{ actionId: 'act_c', term: 'y3-fall' }])
+  })
+
+  it('can exclude and restore an inherited action', () => {
+    const excluded = applySpecializationActionOverride(
+      SPECIALIZATION,
+      'act_a',
+      'excluded',
+    )
+    expect(excluded.excludes).toContain('act_a')
+
+    const restored = applySpecializationActionOverride(
+      excluded,
+      'act_a',
+      'default',
+    )
+    expect(restored.excludes).not.toContain('act_a')
+    expect(restored.placements.some((item) => item.actionId === 'act_a')).toBe(
+      false,
+    )
+  })
+
+  it('replaces an exclusion with a scheduled placement', () => {
+    const scheduled = applySpecializationActionOverride(
+      SPECIALIZATION,
+      'act_b',
+      'y3-spring',
+    )
+
+    expect(scheduled.excludes).not.toContain('act_b')
+    expect(scheduled.placements).toContainEqual({
+      actionId: 'act_b',
+      term: 'y3-spring',
+    })
   })
 })
 

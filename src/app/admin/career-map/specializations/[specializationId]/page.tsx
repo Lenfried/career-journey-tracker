@@ -1,11 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AdminErrorBanner } from '@/features/career-map/components/admin/admin-error-banner'
-import { SpecializationEditorAdmin } from '@/features/career-map/components/admin/track-editor-admin'
-import {
-  getCareerMapTemplate,
-  getCareerSpecializationTemplate,
-} from '@/features/career-map/queries'
+import { AdminNav } from '@/features/career-map/components/admin/admin-nav'
+import { SpecializationEditorAdmin } from '@/features/career-map/components/admin/specialization-editor-admin'
+import { getCareerSpecializationTemplate } from '@/features/career-map/queries'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,22 +21,17 @@ export default async function SpecializationEditorAdminPage({
     params,
     searchParams,
   ])
-  const [template, mapTemplate] = await Promise.all([
-    getCareerSpecializationTemplate(specializationId),
-    getCareerMapTemplate(),
-  ])
+  const template = await getCareerSpecializationTemplate(specializationId)
   if (!template) notFound()
 
-  const { specialization, track, catalog, categories, students } = template
-  const categoryLabel = new Map(
-    categories.map((category) => [category.id, category.label]),
-  )
+  const { specialization, track, tracks, map, catalog, categories, students } =
+    template
   const studentCount = students.filter(
     (student) => student.careerMap.specializationId === specializationId,
   ).length
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-10">
+    <main className="mx-auto w-full max-w-7xl px-6 py-10">
       <header className="mb-6">
         <Link
           href="/admin/career-map/tracks"
@@ -57,14 +50,15 @@ export default async function SpecializationEditorAdminPage({
         </p>
       </header>
 
+      <AdminNav active="tracks" />
       <AdminErrorBanner message={error} />
 
       <SpecializationEditorAdmin
-        tracks={mapTemplate.tracks}
+        tracks={tracks}
         specialization={specialization}
-        generalMap={mapTemplate.map}
+        generalMap={map}
         catalog={catalog}
-        categoryLabel={categoryLabel}
+        categories={categories}
         studentCount={studentCount}
       />
     </main>

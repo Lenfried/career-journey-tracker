@@ -26,7 +26,7 @@ import { loadDataset, saveDataset } from '@/lib/fixtures'
 import {
   addRequiredSkill,
   applyMapPlacements,
-  applySpecializationOverlay,
+  applySpecializationActionOverride,
   createCareerAction,
   createCareerSpecialization,
   deleteCareerAction,
@@ -37,14 +37,13 @@ import {
   replaceSpecialization,
   updateCareerAction,
   updateCareerSpecializationDetails,
-  type SpecializationOverride,
 } from './admin'
 import {
   careerActionFormSchema,
   careerSpecializationFormSchema,
   mapAssignmentValueSchema,
   requiredSkillFormSchema,
-  specializationOverrideValueSchema,
+  specializationActionOverrideFormSchema,
 } from './schemas'
 
 const CATALOG_PATH = '/admin/career-map/catalog'
@@ -244,11 +243,18 @@ export async function deleteCareerSpecializationAction(
   redirect(TRACKS_PATH)
 }
 
-/** One save for a specialization overlay — same shape as the general map. */
-export async function updateSpecializationOverlayAction(
+/** Saves one overlay card so the board never needs to render the whole catalog. */
+export async function setSpecializationActionOverrideAction(
   specializationId: string,
   formData: FormData,
 ) {
+  const parsed = specializationActionOverrideFormSchema.safeParse(
+    Object.fromEntries(formData),
+  )
+  if (!parsed.success) {
+    fail(specializationPath(specializationId), firstIssue(parsed.error))
+  }
+
   const dataset = loadDataset()
   const specialization = dataset.careerSpecializations.find(
     (item) => item.id === specializationId,
@@ -256,22 +262,28 @@ export async function updateSpecializationOverlayAction(
   if (!specialization) {
     fail(TRACKS_PATH, 'That specialization no longer exists.')
   }
-
-  const overrides = new Map<string, SpecializationOverride>()
-  for (const action of dataset.careerActions) {
-    const parsed = specializationOverrideValueSchema.safeParse(
-      formData.get(`override-${action.id}`),
-    )
-    if (!parsed.success) {
-      fail(
-        specializationPath(specializationId),
-        `"${action.title}" has an invalid choice.`,
-      )
-    }
-    overrides.set(action.id, parsed.data)
+  if (
+    !dataset.careerActions.some((action) => action.id === parsed.data.actionId)
+  ) {
+    fail(specializationPath(specializationId), 'That action no longer exists.')
   }
 
-  const updated = applySpecializationOverlay(specialization, overrides)
+  const [generalMap] = dataset.careerMaps
+  const onGeneralMap = generalMap?.placements.some(
+    (placement) => placement.actionId === parsed.data.actionId,
+  )
+  if (parsed.data.override === 'excluded' && !onGeneralMap) {
+    fail(
+      specializationPath(specializationId),
+      'Only an action inherited from the general map can be excluded.',
+    )
+  }
+
+  const updated = applySpecializationActionOverride(
+    specialization,
+    parsed.data.actionId,
+    parsed.data.override,
+  )
   saveDataset({
     ...dataset,
     careerSpecializations: replaceSpecialization(

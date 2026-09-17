@@ -733,18 +733,25 @@ export async function getCareerSpecializationTemplate(
 ): Promise<{
   specialization: CareerSpecialization
   track: CareerTrack
+  tracks: CareerTrack[]
+  map: CareerMap
   catalog: CareerAction[]
   categories: LookupItem[]
   students: StudentRecord[]
 } | null> {
   const specialization = loadCareerSpecialization(specializationId)
   if (!specialization) return null
-  const track = loadCareerTrack(specialization.trackId)
+  const tracks = loadCareerTracks()
+  const track = tracks.find((item) => item.id === specialization.trackId)
   if (!track) return null
+  const [map] = loadCareerMaps()
+  if (!map) return null
 
   return {
     specialization,
     track,
+    tracks,
+    map,
     catalog: loadCareerActions(),
     categories: loadLookups().actionCategories,
     students: loadStudents(),

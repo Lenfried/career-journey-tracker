@@ -245,22 +245,21 @@ export function replaceSpecialization(
   )
 }
 
-/**
- * Rebuilds a specialization's overlay from the full admin form — one
- * `SpecializationOverride` per catalog action, `'default'`
- * meaning "same as the general map". Like `applyMapPlacements`, this replaces
- * both arrays outright because the form is exhaustive over the catalog.
- */
-export function applySpecializationOverlay(
+/** Sets or clears one action in a specialization overlay. */
+export function applySpecializationActionOverride(
   specialization: CareerSpecialization,
-  overrides: Map<string, SpecializationOverride>,
+  actionId: string,
+  override: SpecializationOverride,
 ): CareerSpecialization {
-  const placements: CareerActionPlacement[] = []
-  const excludes: string[] = []
+  const placements = specialization.placements.filter(
+    (placement) => placement.actionId !== actionId,
+  )
+  const excludes = specialization.excludes.filter((id) => id !== actionId)
 
-  for (const [actionId, value] of overrides) {
-    if (value === 'excluded') excludes.push(actionId)
-    else if (value !== 'default') placements.push({ actionId, term: value })
+  if (override === 'excluded') {
+    excludes.push(actionId)
+  } else if (override !== 'default') {
+    placements.push({ actionId, term: override })
   }
 
   return { ...specialization, placements, excludes }

@@ -97,6 +97,12 @@ Required skills follow the same ownership rule: specialization requirements are
 merged with advisor-added student requirements, while the student's held skills
 remain unchanged when their path changes.
 
+The admin UI mirrors these layers. `/admin/career-map/general` is the only place
+that displays and edits the department-wide four-year board. A specialization
+editor displays only that path's added or moved cards, exclusions, and required
+skills; it does not repeat the general map. Each overlay card can be returned to
+the inherited default independently.
+
 Progress is keyed by `actionId`, not by track or specialization. Shared actions
 retain their completion state after a path change. Progress for an action that
 the new specialization no longer includes remains visible as previous-path

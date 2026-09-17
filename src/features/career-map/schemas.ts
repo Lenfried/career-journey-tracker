@@ -120,3 +120,8 @@ export const specializationOverrideValueSchema = z.union([
   z.literal('excluded'),
   z.literal('default'),
 ])
+
+export const specializationActionOverrideFormSchema = z.object({
+  actionId: z.string().trim().min(1, 'Pick an action'),
+  override: specializationOverrideValueSchema,
+})
