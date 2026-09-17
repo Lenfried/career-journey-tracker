@@ -444,10 +444,10 @@ export const careerActionPlacementSchema = z.strictObject({
 export const careerMapSchema = z.strictObject({
   id: z.string().min(1),
   /**
-   * Bumped whenever a placement is added, removed or moved. A student pins the
-   * version they were assigned, so editing the map never silently rewrites what
-   * someone already partway through was asked to do — the catalog-year rule
-   * that degree audits have used for decades.
+   * Bumped whenever an admin edit adds, removes or moves a placement. Nobody
+   * pins to it — the map is the same eleven terms for everybody, always the
+   * current version — so this exists only so an admin screen can show "v4"
+   * and a change history can point at what "since v3" means.
    */
   version: z.number().int().positive(),
   label: z.string().min(1),
