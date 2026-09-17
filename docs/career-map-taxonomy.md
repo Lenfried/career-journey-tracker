@@ -103,6 +103,12 @@ editor displays only that path's added or moved cards, exclusions, and required
 skills; it does not repeat the general map. Each overlay card can be returned to
 the inherited default independently.
 
+Action categories are the shared browsing taxonomy across those layers. The
+catalog and unplaced-action list display actions in configured category order,
+and specialization action selectors use the same category groups. An action's
+stable `act_*` id is generated when the action is created; editing its title or
+category changes where it is displayed without changing that id.
+
 Progress is keyed by `actionId`, not by track or specialization. Shared actions
 retain their completion state after a path change. Progress for an action that
 the new specialization no longer includes remains visible as previous-path
