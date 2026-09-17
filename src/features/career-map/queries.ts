@@ -660,3 +660,59 @@ function toPreviousTrackWork(
     ]
   })
 }
+
+/* -------------------------------------------------------------------------- */
+/* Admin — the department's template, not any one student's map                */
+/* -------------------------------------------------------------------------- */
+
+/** Everything the admin catalog / general-map screen needs. */
+export async function getCareerMapTemplate(): Promise<{
+  map: CareerMap
+  catalog: CareerAction[]
+  tracks: CareerTrack[]
+  categories: LookupItem[]
+  students: StudentRecord[]
+}> {
+  const [map] = loadCareerMaps()
+  if (!map) throw new Error('No career map is published in this dataset.')
+
+  return {
+    map,
+    catalog: loadCareerActions(),
+    tracks: loadCareerTracks(),
+    categories: loadLookups().actionCategories,
+    students: loadStudents(),
+  }
+}
+
+/** Everything one track's overlay editor needs, or `null` for an unknown id. */
+export async function getCareerTrackTemplate(trackId: string): Promise<{
+  track: CareerTrack
+  catalog: CareerAction[]
+  categories: LookupItem[]
+  students: StudentRecord[]
+} | null> {
+  const track = loadCareerTrack(trackId)
+  if (!track) return null
+
+  return {
+    track,
+    catalog: loadCareerActions(),
+    categories: loadLookups().actionCategories,
+    students: loadStudents(),
+  }
+}
+
+/** The lookup rows an evidence-hint picker offers, one array per kind. */
+export async function getEvidenceTypeOptions(): Promise<{
+  milestoneTypes: LookupItem[]
+  noteTypes: LookupItem[]
+  artifactTypes: LookupItem[]
+}> {
+  const lookups = loadLookups()
+  return {
+    milestoneTypes: lookups.milestoneTypes,
+    noteTypes: lookups.noteTypes,
+    artifactTypes: lookups.artifactTypes,
+  }
+}
