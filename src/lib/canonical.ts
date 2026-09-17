@@ -128,6 +128,11 @@ export type LookupName = keyof Lookups
 /* the eleven terms of a four-year degree. It is three separate pieces on      */
 /* purpose:                                                                    */
 /*                                                                            */
+/* The student's own assignment is here, next to the rest of the student record. */
+/* The department's template — the catalog, the map, the tracks — is further     */
+/* down, after the data groups, because a track states the skills a path         */
+/* requires and so has to come after `requiredSkillSchema`.                      */
+/*                                                                              */
 /*   1. `careerActions` — the catalog. Every action is defined ONCE, with a     */
 /*      stable id, no matter how many tracks recommend it. This is what lets a  */
 /*      student change track without losing credit for work already done:       */
@@ -213,73 +218,6 @@ export type EvidenceKind = z.infer<typeof evidenceKindSchema>
 /** A CUNY-style academic term code: `2026FA`, `2027SP`, `2027SU`. */
 export const academicTermSchema = z.string().regex(/^\d{4}(FA|SP|SU)$/)
 
-/** Where an action's completion can be corroborated from existing records. */
-export const actionEvidenceSchema = z.strictObject({
-  kind: evidenceKindSchema,
-  /** A milestone type, artifact type or note type id — a lookup row. */
-  typeId: z.string().min(1),
-})
-
-/**
- * One recommended action, defined once and referenced by every map and track
- * that recommends it.
- */
-export const careerActionSchema = z.strictObject({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  /**
-   * Why this is worth doing, in one line. The paper career maps all omit this,
-   * and it is most of what makes a student act on a row rather than skim it.
-   */
-  why: z.string().min(1),
-  categoryId: z.string().min(1),
-  /** How many times. 1 for most things, 2 for "attend two seminar talks". */
-  targetCount: z.number().int().positive(),
-  evidence: actionEvidenceSchema.nullable(),
-  resourceUrl: z.url().nullable(),
-})
-
-/** An action placed in a term. The unit both maps and tracks are built from. */
-export const careerActionPlacementSchema = z.strictObject({
-  actionId: z.string().min(1),
-  term: careerMapTermSchema,
-})
-
-/** The general plan. Everyone gets this; tracks layer on top of it. */
-export const careerMapSchema = z.strictObject({
-  id: z.string().min(1),
-  /**
-   * Bumped whenever a placement is added, removed or moved. A student pins the
-   * version they were assigned, so editing the map never silently rewrites what
-   * someone already partway through was asked to do — the catalog-year rule
-   * that degree audits have used for decades.
-   */
-  version: z.number().int().positive(),
-  label: z.string().min(1),
-  description: z.string().min(1),
-  /**
-   * Half of this advice has a date in it — application windows move every year.
-   * This is the date a human last checked that the content is still true.
-   */
-  lastReviewed: calendarDateSchema,
-  placements: z.array(careerActionPlacementSchema),
-})
-
-/**
- * A specialisation layered over the general map.
- *
- * Three operations, and only three: `placements` adds an action, or moves one
- * the general map already places; `excludes` drops one that does not apply.
- * Nothing here can change what an action *says*.
- */
-export const careerTrackSchema = z.strictObject({
-  id: z.string().min(1),
-  label: z.string().min(1),
-  description: z.string().min(1),
-  placements: z.array(careerActionPlacementSchema),
-  excludes: z.array(z.string().min(1)),
-})
-
 /**
  * One advisor's call on one action, for one student — both what state it is in
  * and, when they have moved it, which term it belongs in for this student.
@@ -352,11 +290,6 @@ export const studentCareerMapSchema = z.strictObject({
   progress: z.array(careerActionProgressSchema),
 })
 
-export type ActionEvidence = z.infer<typeof actionEvidenceSchema>
-export type CareerAction = z.infer<typeof careerActionSchema>
-export type CareerActionPlacement = z.infer<typeof careerActionPlacementSchema>
-export type CareerMap = z.infer<typeof careerMapSchema>
-export type CareerTrack = z.infer<typeof careerTrackSchema>
 export type CareerActionProgress = z.infer<typeof careerActionProgressSchema>
 export type StudentCareerMap = z.infer<typeof studentCareerMapSchema>
 
@@ -468,6 +401,99 @@ export const studentRecordSchema = studentIdentitySchema.extend({
   /** `null` until an advisor assigns the map. */
   careerMap: studentCareerMapSchema.nullable(),
 })
+
+/* -------------------------------------------------------------------------- */
+/* Career map — the department's template                                      */
+/*                                                                            */
+/* Everything above is what one student carries. This is what the department   */
+/* publishes: the action catalog, the general map, and the tracks that layer   */
+/* over it. It sits below the data groups because a track states the skills    */
+/* its path requires, and that schema is one of the groups.                    */
+/* -------------------------------------------------------------------------- */
+
+/** Where an action's completion can be corroborated from existing records. */
+export const actionEvidenceSchema = z.strictObject({
+  kind: evidenceKindSchema,
+  /** A milestone type, artifact type or note type id — a lookup row. */
+  typeId: z.string().min(1),
+})
+
+/**
+ * One recommended action, defined once and referenced by every map and track
+ * that recommends it.
+ */
+export const careerActionSchema = z.strictObject({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  /**
+   * Why this is worth doing, in one line. The paper career maps all omit this,
+   * and it is most of what makes a student act on a row rather than skim it.
+   */
+  why: z.string().min(1),
+  categoryId: z.string().min(1),
+  /** How many times. 1 for most things, 2 for "attend two seminar talks". */
+  targetCount: z.number().int().positive(),
+  evidence: actionEvidenceSchema.nullable(),
+  resourceUrl: z.url().nullable(),
+})
+
+/** An action placed in a term. The unit both maps and tracks are built from. */
+export const careerActionPlacementSchema = z.strictObject({
+  actionId: z.string().min(1),
+  term: careerMapTermSchema,
+})
+
+/** The general plan. Everyone gets this; tracks layer on top of it. */
+export const careerMapSchema = z.strictObject({
+  id: z.string().min(1),
+  /**
+   * Bumped whenever a placement is added, removed or moved. A student pins the
+   * version they were assigned, so editing the map never silently rewrites what
+   * someone already partway through was asked to do — the catalog-year rule
+   * that degree audits have used for decades.
+   */
+  version: z.number().int().positive(),
+  label: z.string().min(1),
+  description: z.string().min(1),
+  /**
+   * Half of this advice has a date in it — application windows move every year.
+   * This is the date a human last checked that the content is still true.
+   */
+  lastReviewed: calendarDateSchema,
+  placements: z.array(careerActionPlacementSchema),
+})
+
+/**
+ * A specialisation layered over the general map.
+ *
+ * Three operations, and only three: `placements` adds an action, or moves one
+ * the general map already places; `excludes` drops one that does not apply.
+ * Nothing here can change what an action *says*.
+ */
+export const careerTrackSchema = z.strictObject({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  description: z.string().min(1),
+  placements: z.array(careerActionPlacementSchema),
+  excludes: z.array(z.string().min(1)),
+  /**
+   * What this path asks a student to be able to do.
+   *
+   * Required skills belong to the track, not to the student. A student's own
+   * skills are theirs and do not move; what a path demands of them changes the
+   * moment they change path, and the skills gap should follow. A student can
+   * still carry extra requirements of their own — see `requiredSkills` on the
+   * student record — and those survive a track change because an advisor put
+   * them there deliberately.
+   */
+  requiredSkills: z.array(requiredSkillSchema),
+})
+
+export type ActionEvidence = z.infer<typeof actionEvidenceSchema>
+export type CareerAction = z.infer<typeof careerActionSchema>
+export type CareerActionPlacement = z.infer<typeof careerActionPlacementSchema>
+export type CareerMap = z.infer<typeof careerMapSchema>
+export type CareerTrack = z.infer<typeof careerTrackSchema>
 
 /**
  * Group 7 — the lookups, the career map template, plus every student. This is

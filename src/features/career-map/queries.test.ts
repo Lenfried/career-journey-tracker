@@ -64,6 +64,7 @@ const TRACK: CareerTrack = {
     { actionId: 'act_c', term: 'y2-fall' },
   ],
   excludes: ['act_b'],
+  requiredSkills: [],
 }
 
 const progress = (

@@ -237,6 +237,16 @@ describe('career map template', () => {
     }
   })
 
+  it('gives every track the skills its path requires', () => {
+    // A track with no required skills silently turns the skills gap back into
+    // whatever an advisor typed once, which is the behaviour tracks replaced.
+    for (const track of tracks) {
+      expect(track.requiredSkills).not.toHaveLength(0)
+      const ids = track.requiredSkills.map((skill) => skill.id)
+      expect(new Set(ids).size).toBe(ids.length)
+    }
+  })
+
   it('leaves no action stranded outside every map and track', () => {
     const placed = new Set(general.placements.map((p) => p.actionId))
     for (const track of tracks) {

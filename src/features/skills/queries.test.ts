@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { RequiredSkill, StudentSkill } from '@/lib/canonical'
-import { deriveSkillsView, getStudentSkills } from './queries'
+import {
+  deriveSkillsView,
+  getStudentSkills,
+  mergeRequiredSkills,
+} from './queries'
 
 function held(name: string): StudentSkill {
   return {
@@ -103,13 +107,130 @@ describe('deriveSkillsView', () => {
 describe('getStudentSkills', () => {
   it('reads the fixture student whose skills exercise normalisation', async () => {
     const view = await getStudentSkills('stu_al_rashid_zainab')
-    expect(view.gap).toHaveLength(0)
-    expect(view.coveredCount).toBe(view.requiredSkills.length)
+
+    // She holds "python" and "linear algebra"; the two lists capitalise them
+    // differently. Every requirement she has a skill for still reads covered.
+    for (const name of [
+      'Python',
+      'linear algebra',
+      'PyTorch',
+      'Technical writing',
+    ]) {
+      expect(view.requiredSkills.find((s) => s.name === name)?.covered).toBe(
+        true,
+      )
+    }
+    expect(view.skills.every((s) => s.matchesRequirement)).toBe(true)
+  })
+
+  it('raises the bar for a student on a track', async () => {
+    const view = await getStudentSkills('stu_al_rashid_zainab')
+
+    // Her track asks for things her own requirement list never mentioned, and
+    // that is the point — the gap is against the path, not against a list an
+    // advisor wrote once when the goal was set.
+    expect(view.requiredSkills.some((s) => s.source === 'track')).toBe(true)
+    expect(view.gap).not.toHaveLength(0)
+    expect(view.gap.every((s) => s.source === 'track')).toBe(true)
+  })
+
+  it('shows only the advisor\u2019s own requirements when there is no track', async () => {
+    // Farrah wants security work and no security track exists yet.
+    const view = await getStudentSkills('stu_benhamou_farrah')
+    expect(view.requiredSkills).not.toHaveLength(0)
+    expect(view.requiredSkills.every((s) => s.source === 'student')).toBe(true)
   })
 
   it('returns an empty view for an unknown student rather than throwing', async () => {
     const view = await getStudentSkills('stu_does_not_exist')
     expect(view.skills).toHaveLength(0)
     expect(view.requiredSkills).toHaveLength(0)
+  })
+})
+
+describe('mergeRequiredSkills', () => {
+  it('takes the track\u2019s requirements and the advisor\u2019s together', () => {
+    const merged = mergeRequiredSkills(
+      [required('Probability'), required('C++')],
+      [required('Public speaking')],
+    )
+
+    expect(merged.map((s) => s.name).sort()).toEqual([
+      'C++',
+      'Probability',
+      'Public speaking',
+    ])
+    expect(merged.find((s) => s.name === 'C++')?.source).toBe('track')
+    expect(merged.find((s) => s.name === 'Public speaking')?.source).toBe(
+      'student',
+    )
+  })
+
+  it('de-duplicates on the same rule the gap uses, advisor wins', () => {
+    const fromTrack = { ...required('Python'), rationale: 'Track says so.' }
+    const fromStudent = { ...required(' python '), rationale: 'For her lab.' }
+
+    const merged = mergeRequiredSkills([fromTrack], [fromStudent])
+
+    // One requirement, not two near-identical rows an advisor has to reconcile.
+    expect(merged).toHaveLength(1)
+    expect(merged[0].rationale).toBe('For her lab.')
+    expect(merged[0].source).toBe('student')
+  })
+
+  it('handles a student with no track, and a track with no extras', () => {
+    expect(mergeRequiredSkills([], [required('SQL')])).toHaveLength(1)
+    expect(mergeRequiredSkills([required('SQL')], [])).toHaveLength(1)
+    expect(mergeRequiredSkills([], [])).toHaveLength(0)
+  })
+})
+
+describe('changing track', () => {
+  const held_skills = [held('Python'), held('Git')]
+
+  const swe = [required('Data Structures & Algorithms'), required('SQL')]
+  const quant = [required('Probability'), required('C++')]
+  const advisorAdded = [required('Public speaking')]
+
+  it('swaps what the path requires and leaves the student\u2019s own alone', () => {
+    const before = deriveSkillsView(
+      held_skills,
+      mergeRequiredSkills(swe, advisorAdded),
+      'Software / backend engineering',
+    )
+    const after = deriveSkillsView(
+      held_skills,
+      mergeRequiredSkills(quant, advisorAdded),
+      'Quantitative finance',
+    )
+
+    expect(before.requiredSkills.map((s) => s.name)).toContain('SQL')
+    expect(after.requiredSkills.map((s) => s.name)).not.toContain('SQL')
+    expect(after.requiredSkills.map((s) => s.name)).toContain('Probability')
+
+    // The advisor's own requirement survives the switch, and so do the skills
+    // the student actually has.
+    for (const result of [before, after]) {
+      expect(result.requiredSkills.map((s) => s.name)).toContain(
+        'Public speaking',
+      )
+      expect(result.skills.map((s) => s.name)).toEqual(['Git', 'Python'])
+    }
+  })
+
+  it('says where each requirement came from', () => {
+    const result = deriveSkillsView(
+      held_skills,
+      mergeRequiredSkills(quant, advisorAdded),
+      'Quantitative finance',
+    )
+
+    expect(
+      result.requiredSkills.find((s) => s.name === 'C++')?.sourceLabel,
+    ).toBe('Required by the Quantitative finance track')
+    expect(
+      result.requiredSkills.find((s) => s.name === 'Public speaking')
+        ?.sourceLabel,
+    ).toBe('Added by an advisor')
   })
 })

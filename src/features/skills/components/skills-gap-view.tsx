@@ -154,6 +154,10 @@ function RequiredSkillRow({ skill }: { skill: RequiredSkillView }) {
       {skill.rationale ? (
         <p className="text-muted-foreground mt-1 text-sm">{skill.rationale}</p>
       ) : null}
+      {/* Where the requirement came from. Without this line a requirement
+          appears or disappears when a student changes track and nothing on
+          screen explains why. */}
+      <p className="text-muted-foreground mt-1 text-xs">{skill.sourceLabel}</p>
     </li>
   )
 }

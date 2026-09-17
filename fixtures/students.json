@@ -921,7 +921,65 @@
           "term": "y2-summer"
         }
       ],
-      "excludes": []
+      "excludes": [],
+      "requiredSkills": [
+        {
+          "id": "rq_swe_dsa",
+          "name": "Data Structures & Algorithms",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Every technical screen in this path is one, and it is the only part of the interview you can prepare for with certainty."
+        },
+        {
+          "id": "rq_swe_python",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": "The default language for interviews and for most backend teams hiring new grads."
+        },
+        {
+          "id": "rq_swe_git",
+          "name": "Git",
+          "category": "tool",
+          "importance": "essential",
+          "rationale": "Nobody teaches it on the job; every team assumes it on day one."
+        },
+        {
+          "id": "rq_swe_sql",
+          "name": "SQL",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "Backend work is mostly moving data in and out of a database."
+        },
+        {
+          "id": "rq_swe_apis",
+          "name": "HTTP & REST APIs",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "The interface between every two pieces of a backend system."
+        },
+        {
+          "id": "rq_swe_testing",
+          "name": "Testing",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "The difference between code that works once and code a team can change."
+        },
+        {
+          "id": "rq_swe_system_design",
+          "name": "System Design",
+          "category": "technical",
+          "importance": "nice-to-have",
+          "rationale": "Asked in new-grad loops at larger companies. Learnable in a semester."
+        },
+        {
+          "id": "rq_swe_linux",
+          "name": "Linux & the command line",
+          "category": "tool",
+          "importance": "nice-to-have",
+          "rationale": "Everything runs on it, and not knowing it slows down every other task."
+        }
+      ]
     },
     {
       "id": "track_ml_research",
@@ -953,7 +1011,61 @@
           "term": "y3-fall"
         }
       ],
-      "excludes": ["act_sophomore_programs", "act_career_fair_working"]
+      "excludes": [
+        "act_sophomore_programs",
+        "act_career_fair_working"
+      ],
+      "requiredSkills": [
+        {
+          "id": "rq_ml_linalg",
+          "name": "Linear Algebra",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Every model in the field is written in it. Taking it late costs a year."
+        },
+        {
+          "id": "rq_ml_prob",
+          "name": "Probability & Statistics",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "The language every result in a paper is stated in."
+        },
+        {
+          "id": "rq_ml_python",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": "The whole research ecosystem is written in it."
+        },
+        {
+          "id": "rq_ml_pytorch",
+          "name": "PyTorch",
+          "category": "tool",
+          "importance": "important",
+          "rationale": "What most labs actually run. Frameworks change; the habits transfer."
+        },
+        {
+          "id": "rq_ml_writing",
+          "name": "Technical writing",
+          "category": "soft",
+          "importance": "important",
+          "rationale": "A result nobody can read is a result that did not happen, and applications are read before they are believed."
+        },
+        {
+          "id": "rq_ml_reading",
+          "name": "Reading research papers",
+          "category": "domain",
+          "importance": "important",
+          "rationale": "The skill that turns a lab placement into a contribution rather than an errand."
+        },
+        {
+          "id": "rq_ml_dsa",
+          "name": "Data Structures & Algorithms",
+          "category": "technical",
+          "importance": "nice-to-have",
+          "rationale": "Less central here than on the industry track, but it still gates internships you may want as a fallback."
+        }
+      ]
     },
     {
       "id": "track_quant",
@@ -981,7 +1093,58 @@
           "term": "y2-spring"
         }
       ],
-      "excludes": []
+      "excludes": [],
+      "requiredSkills": [
+        {
+          "id": "rq_q_prob",
+          "name": "Probability",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "The subject of the interview. Everything else is secondary."
+        },
+        {
+          "id": "rq_q_stats",
+          "name": "Statistics",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Inference under uncertainty is the job."
+        },
+        {
+          "id": "rq_q_mental_math",
+          "name": "Mental arithmetic under time pressure",
+          "category": "technical",
+          "importance": "essential",
+          "rationale": "Tested directly, timed, in almost every first-round. Pure practice."
+        },
+        {
+          "id": "rq_q_python",
+          "name": "Python",
+          "category": "language",
+          "importance": "essential",
+          "rationale": "Research and backtesting are done in it."
+        },
+        {
+          "id": "rq_q_cpp",
+          "name": "C++",
+          "category": "language",
+          "importance": "important",
+          "rationale": "Where latency matters, this is what the desk writes."
+        },
+        {
+          "id": "rq_q_linalg",
+          "name": "Linear Algebra",
+          "category": "technical",
+          "importance": "important",
+          "rationale": "Underneath every model on the desk."
+        },
+        {
+          "id": "rq_q_markets",
+          "name": "Financial markets",
+          "category": "domain",
+          "importance": "nice-to-have",
+          "rationale": "Teachable on the job, but knowing the vocabulary makes the interview conversation easier."
+        }
+      ]
     }
   ],
   "students": [

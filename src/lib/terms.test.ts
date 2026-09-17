@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { academicTermForDate, formatAcademicTerm, parseAcademicTerm } from './terms'
+import {
+  academicTermForDate,
+  formatAcademicTerm,
+  parseAcademicTerm,
+} from './terms'
 
 describe('parseAcademicTerm', () => {
   it('reads a term code', () => {

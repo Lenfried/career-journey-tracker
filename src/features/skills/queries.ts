@@ -6,13 +6,18 @@ import {
   type RequiredSkill,
   type StudentSkill,
 } from '@/lib/canonical'
-import { loadStudent } from '@/lib/fixtures'
+import { loadCareerTrack, loadStudent } from '@/lib/fixtures'
 import {
   IMPORTANCE_LABELS,
   PROFICIENCY_LABELS,
   SKILL_CATEGORY_LABELS,
 } from '@/lib/labels'
-import type { RequiredSkillView, SkillsView, StudentSkillView } from './types'
+import type {
+  RequiredSkillView,
+  SkillsView,
+  SourcedRequiredSkill,
+  StudentSkillView,
+} from './types'
 
 const EMPTY: SkillsView = {
   skills: [],
@@ -21,11 +26,50 @@ const EMPTY: SkillsView = {
   coveredCount: 0,
 }
 
-/** Both skill lists for a student, with the gap derived between them. */
+/**
+ * Both skill lists for a student, with the gap derived between them.
+ *
+ * Required skills come from two places and are merged here: the track the
+ * student is on, and anything an advisor added for this student specifically.
+ * Change track and the first set swaps; the student's own skills and the
+ * advisor's own additions are untouched, and the gap recomputes against the new
+ * path on the next read.
+ */
 export async function getStudentSkills(studentId: string): Promise<SkillsView> {
   const student = loadStudent(studentId)
   if (!student) return EMPTY
-  return deriveSkillsView(student.skills, student.requiredSkills)
+
+  const track = loadCareerTrack(student.careerMap?.trackId ?? null)
+
+  return deriveSkillsView(
+    student.skills,
+    mergeRequiredSkills(track?.requiredSkills ?? [], student.requiredSkills),
+    track?.label ?? null,
+  )
+}
+
+/**
+ * The track's requirements plus the advisor's, de-duplicated by the same
+ * normalisation the gap uses.
+ *
+ * The student's own entry wins a collision. Both lists are written by people;
+ * when an advisor has written a rationale for *this* student next to a skill
+ * the track also names, theirs is the one with the context in it.
+ */
+export function mergeRequiredSkills(
+  fromTrack: RequiredSkill[],
+  fromStudent: RequiredSkill[],
+): SourcedRequiredSkill[] {
+  const merged = new Map<string, SourcedRequiredSkill>()
+
+  for (const skill of fromTrack) {
+    merged.set(normaliseSkillName(skill.name), { ...skill, source: 'track' })
+  }
+  for (const skill of fromStudent) {
+    merged.set(normaliseSkillName(skill.name), { ...skill, source: 'student' })
+  }
+
+  return [...merged.values()]
 }
 
 /* -------------------------------------------------------------------------- */
@@ -38,7 +82,8 @@ export async function getStudentSkills(studentId: string): Promise<SkillsView> {
  */
 export function deriveSkillsView(
   skills: StudentSkill[],
-  requiredSkills: RequiredSkill[],
+  requiredSkills: SourcedRequiredSkill[],
+  trackLabel: string | null = null,
 ): SkillsView {
   // Both sides go through `normaliseSkillName`. Comparing raw strings would
   // report " python " and "Python" as different skills, and the gap display
@@ -72,6 +117,11 @@ export function deriveSkillsView(
       importanceLabel: IMPORTANCE_LABELS[skill.importance],
       rationale: skill.rationale,
       covered: held.has(normaliseSkillName(skill.name)),
+      source: skill.source ?? 'student',
+      sourceLabel:
+        skill.source === 'track' && trackLabel
+          ? `Required by the ${trackLabel} track`
+          : 'Added by an advisor',
     }))
     .sort(byImportanceThenName)
 
