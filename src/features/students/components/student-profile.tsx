@@ -1,5 +1,6 @@
+import { CareerMapStrip } from '@/features/career-map/components/career-map-strip'
 import { CareerMapTimeline } from '@/features/career-map/components/career-map-timeline'
-import { getCareerMap } from '@/features/career-map/queries'
+import { getCareerMap, getCareerMapStatus } from '@/features/career-map/queries'
 import { CareerGoalCard } from '@/features/goals/components/career-goal-card'
 import { getStudentGoal } from '@/features/goals/queries'
 import { MilestoneList } from '@/features/milestones/components/milestone-list'
@@ -51,9 +52,10 @@ export async function StudentProfile({
 }
 
 async function OverviewTab({ studentId }: { studentId: string }) {
-  const [goal, readiness] = await Promise.all([
+  const [goal, readiness, careerMap] = await Promise.all([
     getStudentGoal(studentId),
     getReadinessStatus(studentId),
+    getCareerMapStatus(studentId),
   ])
 
   return (
@@ -63,6 +65,13 @@ async function OverviewTab({ studentId }: { studentId: string }) {
           Career goal
         </h2>
         <CareerGoalCard goal={goal} />
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight">
+          Career map
+        </h2>
+        <CareerMapStrip studentId={studentId} status={careerMap} />
       </section>
 
       <section>

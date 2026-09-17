@@ -63,3 +63,27 @@ export function academicTermForDate(date: string = todayOnCampus()): string {
 
   return `${year}${season}`
 }
+
+/**
+ * How many fall and spring terms separate two term codes. Summers do not count
+ * — they are not enrollment terms, and nobody becomes a sophomore by living
+ * through July.
+ *
+ * This is what anchors a student to the career map: a student who entered four
+ * enrollment terms ago started the map four enrollment terms back from wherever
+ * they are now.
+ *
+ * Negative when `to` is before `from`; 0 when either code is malformed.
+ */
+export function enrollmentTermsBetween(from: string, to: string): number {
+  const start = parseAcademicTerm(from)
+  const end = parseAcademicTerm(to)
+  if (!start || !end) return 0
+
+  return countEnrollmentTerms(end) - countEnrollmentTerms(start)
+}
+
+/** Enrollment terms since year zero. Summer scores with the spring before it. */
+function countEnrollmentTerms(term: AcademicTerm): number {
+  return term.year * 2 + (term.season === 'FA' ? 1 : 0)
+}

@@ -28,8 +28,8 @@ export function CareerMapTimeline({ map }: { map: CareerMapView | null }) {
   if (!map) {
     return (
       <EmptyState
-        title="Not on the career map yet."
-        hint="An advisor puts a student on the map in their first advising meeting, and picks the term they are joining at."
+        title="No career map is published."
+        hint="Everyone is on the same map, so this means the department has not published one — not that this student was missed."
       />
     )
   }

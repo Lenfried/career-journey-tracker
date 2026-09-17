@@ -24,21 +24,27 @@ import {
 import { formatCalendarDate, formatTimestamp, todayOnCampus } from '@/lib/dates'
 import {
   loadCareerActions,
-  loadCareerMap,
+  loadCareerMaps,
   loadCareerTrack,
   loadCareerTracks,
   loadLookups,
   loadStudent,
+  loadStudents,
 } from '@/lib/fixtures'
 import {
   CAREER_ACTION_STATUS_LABELS,
   CAREER_MAP_TERM_LABELS,
 } from '@/lib/labels'
 import { indexLookup } from '@/lib/lookups'
-import { academicTermForDate, formatAcademicTerm } from '@/lib/terms'
+import {
+  academicTermForDate,
+  enrollmentTermsBetween,
+  formatAcademicTerm,
+} from '@/lib/terms'
 import type {
   CareerActionView,
   CareerMapPosition,
+  CareerMapStatus,
   CareerMapTermView,
   CareerMapView,
   CareerTrackOption,
@@ -56,11 +62,45 @@ export async function getCareerMap(
   studentId: string,
 ): Promise<CareerMapView | null> {
   const student = loadStudent(studentId)
-  if (!student?.careerMap) return null
+  return student ? buildCareerMapView(student) : null
+}
 
-  const map = loadCareerMap(student.careerMap.mapId)
-  // A dangling map id is a data problem, not a reason for the profile to 500.
-  // The student reads as unassigned, which is visible and reportable.
+/**
+ * Career map status for every student, keyed by student id.
+ *
+ * Same shape and the same reason as `listFollowUpStatuses()` in notes: the
+ * dashboard needs this for the whole roster at once, and returning it in one
+ * pass keeps `lib/fixtures` behind the service layer instead of letting the
+ * dashboard iterate students itself.
+ *
+ * This derives the full view for every student and then throws most of it away.
+ * At eighteen fixture records that is free. Against a real source it is the
+ * function to revisit — as an aggregate query, not as this loop.
+ */
+export async function listCareerMapStatuses(): Promise<
+  Map<string, CareerMapStatus>
+> {
+  return new Map(
+    loadStudents().map((student) => [
+      student.id,
+      toStatus(buildCareerMapView(student)),
+    ]),
+  )
+}
+
+/** One student's map reduced to the numbers a summary line shows. */
+export async function getCareerMapStatus(
+  studentId: string,
+): Promise<CareerMapStatus> {
+  const student = loadStudent(studentId)
+  return toStatus(student ? buildCareerMapView(student) : null)
+}
+
+function buildCareerMapView(student: StudentRecord): CareerMapView | null {
+  // One map, everyone on it. A dataset with no map at all is a data problem,
+  // not a reason for the profile to 500 — the tab says so and the rest of the
+  // page still renders.
+  const [map] = loadCareerMaps()
   if (!map) return null
 
   const catalog = loadCareerActions()
@@ -77,6 +117,32 @@ export async function getCareerMap(
     moveReasonLabels: indexLookup(lookups.moveReasons),
     position: deriveMapPosition(student, todayOnCampus()),
   })
+}
+
+const NO_MAP: CareerMapStatus = {
+  state: 'none',
+  trackLabel: null,
+  currentTermLabel: null,
+  doneCount: 0,
+  applicableCount: 0,
+  progressPercent: 0,
+  overdueCount: 0,
+  focusCount: 0,
+}
+
+function toStatus(view: CareerMapView | null): CareerMapStatus {
+  if (!view) return NO_MAP
+
+  return {
+    state: view.position.state,
+    trackLabel: view.trackLabel,
+    currentTermLabel: view.position.currentTermLabel,
+    doneCount: view.doneCount,
+    applicableCount: view.applicableCount,
+    progressPercent: view.progressPercent,
+    overdueCount: view.overdueActions.length,
+    focusCount: view.focusActions.length,
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -99,21 +165,34 @@ const TERM_SUFFIX: Record<string, string> = {
 /** Past the last term — used when there is no current term to sit on. */
 const PAST_TIMELINE = CAREER_MAP_TERMS.length
 
+/** The eight terms a student is actually enrolled for. Summers sit between them. */
+const ENROLLMENT_TERMS = CAREER_MAP_TERMS.filter(
+  (term) => !term.endsWith('-summer'),
+)
+
 /**
- * Where a student is on the timeline today.
+ * Where a student is on the timeline today, and where their own timeline began.
  *
  * Year comes from `classification` and season from the date. Deriving the year
- * from `entryTerm` instead would be more precise for a student who moves
- * through at exactly two terms a year and wrong for everyone else — and at a
- * commuter campus where many students are part-time, "everyone else" is a lot
- * of people. Classification is what the registrar maintains and what every
- * other screen already shows, so this can never contradict the roster.
+ * from `entryTerm` instead would be exact for a student who moves through at
+ * two terms a year and wrong for everyone else — and at a commuter campus where
+ * many students are part-time, "everyone else" is a lot of people.
+ * Classification is what the registrar maintains and what every other screen
+ * shows, so this can never contradict the roster.
+ *
+ * The start of the timeline does come from `entryTerm`, counted in enrollment
+ * terms back from where they are now. Someone who started here lands on
+ * `y1-fall`; a transfer who arrived two years ago lands part-way in, so the
+ * years before they existed here are not counted against them.
  *
  * `today` is a parameter rather than a clock read so this can be tested against
  * a fixed date instead of drifting.
  */
 export function deriveMapPosition(
-  student: Pick<StudentRecord, 'classification' | 'enrollmentStatus'>,
+  student: Pick<
+    StudentRecord,
+    'classification' | 'enrollmentStatus' | 'entryTerm'
+  >,
   today: string,
 ): CareerMapPosition {
   const academicTerm = academicTermForDate(today)
@@ -128,7 +207,17 @@ export function deriveMapPosition(
   // however their enrollment record reads.
   const onTimeline = index >= 0
 
+  const startedTerm = deriveStartedTerm(
+    year,
+    season,
+    student.entryTerm,
+    academicTerm,
+  )
+
   return {
+    startedTerm,
+    startedTermLabel: CAREER_MAP_TERM_LABELS[startedTerm],
+    startedIndex: CAREER_MAP_TERMS.indexOf(startedTerm),
     currentTerm: state === 'active' && onTimeline ? candidate : null,
     currentTermLabel:
       state === 'active' && onTimeline
@@ -139,6 +228,30 @@ export function deriveMapPosition(
     academicTermLabel: formatAcademicTerm(academicTerm),
     timelineIndex: state === 'ended' || !onTimeline ? PAST_TIMELINE : index,
   }
+}
+
+/**
+ * The term a student's own run at the map began: their position now, counted
+ * back by the enrollment terms they have actually been here.
+ *
+ * A summer counts as the spring before it — nobody advances over the summer —
+ * so the answer is always a term a student was enrolled for.
+ */
+function deriveStartedTerm(
+  year: number,
+  season: string,
+  entryTerm: string,
+  academicTerm: string,
+): CareerMapTerm {
+  const last = ENROLLMENT_TERMS.length - 1
+  const now = clamp((year - 1) * 2 + (season === 'FA' ? 0 : 1), 0, last)
+  const elapsed = Math.max(0, enrollmentTermsBetween(entryTerm, academicTerm))
+
+  return ENROLLMENT_TERMS[clamp(now - elapsed, 0, last)]
+}
+
+function clamp(value: number, low: number, high: number): number {
+  return Math.min(Math.max(value, low), high)
 }
 
 function mapState(status: EnrollmentStatus): CareerMapPosition['state'] {
@@ -304,7 +417,7 @@ export function deriveCareerMapView({
   )
 
   const placements = mergePlacements(map, track)
-  const startedIndex = CAREER_MAP_TERMS.indexOf(assignment.startedTerm)
+  const { startedIndex } = position
 
   const views = placements
     .flatMap((placement) => {
@@ -360,10 +473,8 @@ export function deriveCareerMapView({
   return {
     mapId: map.id,
     mapLabel: map.label,
-    mapVersion: assignment.mapVersion,
+    mapVersion: map.version,
     lastReviewedLabel: formatCalendarDate(map.lastReviewed),
-    startedTerm: assignment.startedTerm,
-    startedTermLabel: CAREER_MAP_TERM_LABELS[assignment.startedTerm],
     trackId: track?.id ?? null,
     trackLabel: track?.label ?? null,
     trackDescription: track?.description ?? null,

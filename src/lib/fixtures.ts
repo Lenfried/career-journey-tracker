@@ -77,9 +77,9 @@ export function loadCareerActions(): CareerAction[] {
   return loadDataset().careerActions
 }
 
-/** One career map by id, or `undefined` when it is unknown. */
-export function loadCareerMap(id: string): CareerMap | undefined {
-  return loadDataset().careerMaps.find((map) => map.id === id)
+/** Every career map. There is one today, and everyone is on it. */
+export function loadCareerMaps(): CareerMap[] {
+  return loadDataset().careerMaps
 }
 
 /** One track by id, or `undefined`. A student with no track passes `null`. */

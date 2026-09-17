@@ -3,14 +3,18 @@
 import type { CareerActionStatus, CareerMapTerm } from '@/lib/canonical'
 
 /**
- * Where a student sits on the timeline right now.
+ * Where a student sits on the timeline, and where they joined it.
  *
- * Derived from `classification` and today's date, not from `entryTerm`. The
- * registrar maintains classification, every screen in the app already shows it,
- * and a career map that says "Year 2" next to a roster row saying "Junior"
- * loses the advisor's trust in one glance. `entryTerm` is the more precise
- * input and this is the one function to revisit when part-time and transfer
- * pacing needs to be exact.
+ * The map is the same eleven terms for everybody. What differs per student is
+ * only when those terms happen: a freshman's Year 1 and a senior's Year 1 are
+ * the same row on the same plan, three years apart on the calendar.
+ *
+ * Both ends are derived. The current term comes from `classification` and the
+ * date — the registrar maintains classification, every screen already shows it,
+ * and a map saying "Year 2" beside a roster row saying "Junior" loses an
+ * advisor's trust in one glance. The start comes from `entryTerm`: a student who
+ * arrived four enrollment terms ago joined the map four terms back from where
+ * they are now, so a transfer's first two years are correctly not their own.
  */
 export type CareerMapPosition = {
   /** `null` in the summer after senior year, and whenever the state is not active. */
@@ -22,6 +26,10 @@ export type CareerMapPosition = {
    * `ended` — graduated or withdrawn. The map is history, not a plan.
    */
   state: 'active' | 'paused' | 'ended'
+  /** Where this student's own timeline starts. `y1-fall` for anyone who began here. */
+  startedTerm: CareerMapTerm
+  startedTermLabel: string
+  startedIndex: number
   /** `2026FA`, and `Fall 2026`. */
   academicTerm: string
   academicTermLabel: string
@@ -139,9 +147,6 @@ export type CareerMapView = {
   mapVersion: number
   /** Half this advice has a month in it. This is when a human last checked. */
   lastReviewedLabel: string
-  /** The term the student joined the map. */
-  startedTerm: CareerMapTerm
-  startedTermLabel: string
   trackId: string | null
   trackLabel: string | null
   trackDescription: string | null
@@ -163,4 +168,25 @@ export type CareerMapView = {
   /** Everything an advisor has moved, wherever it landed. */
   carriedActions: CareerActionView[]
   previousTrackWork: PreviousTrackActionView[]
+}
+
+/**
+ * One student's career map, reduced to the numbers a list can show.
+ *
+ * The profile tab needs every action; a roster row or a dashboard panel needs
+ * six integers. Same derivation behind both — a second, lighter calculation
+ * would be a second answer to the same question, and the two would disagree
+ * within a month.
+ */
+export type CareerMapStatus = {
+  /** `none` when there is no map to show — an unknown student, or no map published. */
+  state: CareerMapPosition['state'] | 'none'
+  trackLabel: string | null
+  currentTermLabel: string | null
+  doneCount: number
+  applicableCount: number
+  progressPercent: number
+  overdueCount: number
+  /** Unfinished actions in the current term — what today's meeting is about. */
+  focusCount: number
 }

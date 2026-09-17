@@ -43,7 +43,10 @@ export function CareerMapSummary({ map }: { map: CareerMapView }) {
       </div>
 
       <dl className="divide-muted grid gap-x-6 gap-y-3 px-6 py-4 text-sm sm:grid-cols-3">
-        <Fact term="Joined the map at" detail={map.startedTermLabel} />
+        <Fact
+          term="Started this plan at"
+          detail={map.position.startedTermLabel}
+        />
         <Fact
           term="Behind on"
           detail={

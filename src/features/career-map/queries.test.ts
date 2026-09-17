@@ -3,7 +3,6 @@ import type {
   CareerAction,
   CareerActionProgress,
   CareerMap,
-  CareerMapTerm,
   CareerTrack,
 } from '@/lib/canonical'
 import {
@@ -11,6 +10,8 @@ import {
   deriveCareerMapView,
   deriveMapPosition,
   getCareerMap,
+  getCareerMapStatus,
+  listCareerMapStatuses,
   mergePlacements,
   type EvidenceSummary,
 } from './queries'
@@ -86,7 +87,7 @@ const view = ({
   track = null,
   progress: rows = [],
   evidence = new Map<string, EvidenceSummary>(),
-  startedTerm = 'y1-fall' as const,
+  entryTerm = '2024FA',
   classification = 'junior' as const,
   enrollmentStatus = 'enrolled' as const,
   today = '2026-09-16',
@@ -94,7 +95,8 @@ const view = ({
   track?: CareerTrack | null
   progress?: CareerActionProgress[]
   evidence?: Map<string, EvidenceSummary>
-  startedTerm?: CareerMapTerm
+  /** Four enrollment terms before the default "today", so a junior starts at y1. */
+  entryTerm?: string
   classification?: 'freshman' | 'sophomore' | 'junior' | 'senior'
   enrollmentStatus?: 'enrolled' | 'leave-of-absence' | 'graduated' | 'withdrawn'
   today?: string
@@ -105,9 +107,6 @@ const view = ({
     tracks: [TRACK],
     catalog: CATALOG,
     assignment: {
-      mapId: MAP.id,
-      mapVersion: 1,
-      startedTerm,
       trackId: track?.id ?? null,
       trackSetAt: null,
       progress: rows,
@@ -115,7 +114,10 @@ const view = ({
     evidence,
     categoryLabels: new Map([['cat_advising', 'Advising']]),
     moveReasonLabels: new Map([['move_transfer', 'Transferred in']]),
-    position: deriveMapPosition({ classification, enrollmentStatus }, today),
+    position: deriveMapPosition(
+      { classification, enrollmentStatus, entryTerm },
+      today,
+    ),
   })
 
 const find = (result: ReturnType<typeof view>, actionId: string) =>
@@ -129,21 +131,33 @@ describe('deriveMapPosition', () => {
   it('reads the year from classification and the season from the date', () => {
     expect(
       deriveMapPosition(
-        { classification: 'freshman', enrollmentStatus: 'enrolled' },
+        {
+          classification: 'freshman',
+          enrollmentStatus: 'enrolled',
+          entryTerm: '2024FA',
+        },
         '2026-09-16',
       ).currentTerm,
     ).toBe('y1-fall')
 
     expect(
       deriveMapPosition(
-        { classification: 'junior', enrollmentStatus: 'enrolled' },
+        {
+          classification: 'junior',
+          enrollmentStatus: 'enrolled',
+          entryTerm: '2024FA',
+        },
         '2027-02-03',
       ).currentTerm,
     ).toBe('y3-spring')
 
     expect(
       deriveMapPosition(
-        { classification: 'sophomore', enrollmentStatus: 'enrolled' },
+        {
+          classification: 'sophomore',
+          enrollmentStatus: 'enrolled',
+          entryTerm: '2024FA',
+        },
         '2026-07-04',
       ).currentTerm,
     ).toBe('y2-summer')
@@ -151,7 +165,11 @@ describe('deriveMapPosition', () => {
 
   it('treats August as fall, when the recruiting wave opens', () => {
     const position = deriveMapPosition(
-      { classification: 'junior', enrollmentStatus: 'enrolled' },
+      {
+        classification: 'junior',
+        enrollmentStatus: 'enrolled',
+        entryTerm: '2024FA',
+      },
       '2026-08-04',
     )
     expect(position.currentTerm).toBe('y3-fall')
@@ -161,7 +179,11 @@ describe('deriveMapPosition', () => {
 
   it('has no term for the summer after senior year', () => {
     const position = deriveMapPosition(
-      { classification: 'senior', enrollmentStatus: 'enrolled' },
+      {
+        classification: 'senior',
+        enrollmentStatus: 'enrolled',
+        entryTerm: '2024FA',
+      },
       '2027-07-01',
     )
     expect(position.currentTerm).toBeNull()
@@ -170,7 +192,11 @@ describe('deriveMapPosition', () => {
 
   it('pauses a student on leave rather than placing them in a term', () => {
     const position = deriveMapPosition(
-      { classification: 'sophomore', enrollmentStatus: 'leave-of-absence' },
+      {
+        classification: 'sophomore',
+        enrollmentStatus: 'leave-of-absence',
+        entryTerm: '2024FA',
+      },
       '2026-09-16',
     )
     expect(position.state).toBe('paused')
@@ -182,7 +208,11 @@ describe('deriveMapPosition', () => {
   it('ends the map for a graduated or withdrawn student', () => {
     for (const status of ['graduated', 'withdrawn'] as const) {
       const position = deriveMapPosition(
-        { classification: 'senior', enrollmentStatus: status },
+        {
+          classification: 'senior',
+          enrollmentStatus: status,
+          entryTerm: '2024FA',
+        },
         '2026-09-16',
       )
       expect(position.state).toBe('ended')
@@ -403,9 +433,18 @@ describe('deriveCareerMapView', () => {
 })
 
 describe('getCareerMap', () => {
-  it('returns null for a student nobody has put on the map', async () => {
-    // Tobias is the "nothing started" fixture student.
-    expect(await getCareerMap('stu_lindqvist_tobias')).toBeNull()
+  it('puts a student with nothing recorded on the map all the same', async () => {
+    // Tobias is the "nothing started" fixture student. Everyone is on the map;
+    // a freshman two weeks in simply has not done any of it yet.
+    const result = await getCareerMap('stu_lindqvist_tobias')
+
+    expect(result?.terms).toHaveLength(11)
+    expect(result?.doneCount).toBe(0)
+    expect(
+      result?.terms
+        .flatMap((term) => term.actions)
+        .every((action) => action.status === 'not-started'),
+    ).toBe(true)
   })
 
   it('returns null for an unknown student rather than throwing', async () => {
@@ -438,7 +477,8 @@ describe('getCareerMap', () => {
 describe('a student who joined the map late', () => {
   // A transfer arriving as a junior was never asked to do the Year 1 actions.
   const transfer = () =>
-    view({ startedTerm: 'y3-fall', classification: 'junior' })
+    // A junior in their first term here: nothing before Year 3 was ever theirs.
+    view({ entryTerm: '2026FA', classification: 'junior' })
 
   it('never shows them as overdue', () => {
     expect(transfer().overdueActions).toHaveLength(0)
@@ -458,7 +498,7 @@ describe('a student who joined the map late', () => {
     // A transfer who does the Year 1 advising intake in their first term here
     // has done it. Only untouched actions drop out.
     const result = view({
-      startedTerm: 'y3-fall',
+      entryTerm: '2026FA',
       classification: 'junior',
       progress: [progress('act_a')],
     })
@@ -488,7 +528,7 @@ describe('a student who joined the map late', () => {
 describe('an action an advisor moved', () => {
   const moved = (overrides = {}) =>
     view({
-      startedTerm: 'y3-fall',
+      entryTerm: '2026FA',
       classification: 'junior',
       progress: [
         progress('act_a', {
@@ -553,5 +593,98 @@ describe('an action an advisor moved', () => {
     })
     // Ugly, legible, reportable — the same call `resolveLabel` makes.
     expect(find(unknown, 'act_a')?.moveReasonLabel).toBe('move_retired')
+  })
+})
+
+describe('listCareerMapStatuses', () => {
+  it('has an entry for every student', async () => {
+    const statuses = await listCareerMapStatuses()
+
+    expect(statuses.size).toBeGreaterThanOrEqual(15)
+    // On the map like everyone else, with nothing done and nothing yet late.
+    expect(statuses.get('stu_lindqvist_tobias')).toMatchObject({
+      state: 'active',
+      doneCount: 0,
+      overdueCount: 0,
+    })
+  })
+
+  it('agrees with the full view for the same student', async () => {
+    // Two callers, one derivation. If these ever disagree, the summary line on
+    // the dashboard is quietly lying about the page it links to.
+    const [statuses, view] = await Promise.all([
+      listCareerMapStatuses(),
+      getCareerMap('stu_okonkwo_amara'),
+    ])
+    const status = statuses.get('stu_okonkwo_amara')
+
+    expect(status?.doneCount).toBe(view?.doneCount)
+    expect(status?.applicableCount).toBe(view?.applicableCount)
+    expect(status?.overdueCount).toBe(view?.overdueActions.length)
+    expect(status?.trackLabel).toBe(view?.trackLabel)
+  })
+})
+
+describe('getCareerMapStatus', () => {
+  it('reports an unknown student rather than throwing', async () => {
+    expect(await getCareerMapStatus('stu_does_not_exist')).toMatchObject({
+      state: 'none',
+      overdueCount: 0,
+    })
+  })
+})
+
+describe('where a student\u2019s own timeline starts', () => {
+  const start = (
+    classification: 'freshman' | 'sophomore' | 'junior' | 'senior',
+    entryTerm: string,
+  ) =>
+    deriveMapPosition(
+      { classification, enrollmentStatus: 'enrolled', entryTerm },
+      '2026-09-16',
+    ).startedTerm
+
+  it('puts anyone who began here at the start of the map', () => {
+    expect(start('freshman', '2026FA')).toBe('y1-fall')
+    expect(start('sophomore', '2025FA')).toBe('y1-fall')
+    expect(start('junior', '2024FA')).toBe('y1-fall')
+    expect(start('senior', '2023FA')).toBe('y1-fall')
+  })
+
+  it('starts a transfer where they actually arrived', () => {
+    // A junior in their first term here has no Year 1 or Year 2 to answer for.
+    expect(start('junior', '2026FA')).toBe('y3-fall')
+    expect(start('senior', '2025FA')).toBe('y3-fall')
+  })
+
+  it('never lands on a summer, because nobody enrolls into one', () => {
+    for (const entry of ['2023FA', '2024SP', '2025SU', '2026FA']) {
+      expect(start('senior', entry)).not.toContain('summer')
+    }
+  })
+
+  it('is the same map either way — only the calendar moves', () => {
+    // A freshman's Year 1 and a senior's Year 1 are the same row of the same
+    // plan, three years apart.
+    const freshman = deriveMapPosition(
+      {
+        classification: 'freshman',
+        enrollmentStatus: 'enrolled',
+        entryTerm: '2026FA',
+      },
+      '2026-09-16',
+    )
+    const senior = deriveMapPosition(
+      {
+        classification: 'senior',
+        enrollmentStatus: 'enrolled',
+        entryTerm: '2023FA',
+      },
+      '2026-09-16',
+    )
+
+    expect(freshman.startedTerm).toBe(senior.startedTerm)
+    expect(freshman.currentTerm).toBe('y1-fall')
+    expect(senior.currentTerm).toBe('y4-fall')
   })
 })

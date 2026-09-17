@@ -7,6 +7,7 @@ import {
   loadLookups,
   loadStudents,
 } from './fixtures'
+import { academicTermForDate, enrollmentTermsBetween } from './terms'
 
 /**
  * These tests guard the fixture set itself, not the code that reads it.
@@ -271,19 +272,22 @@ describe('career map scenario coverage', () => {
 
   it('points every progress row at an action that exists', () => {
     for (const student of students) {
-      for (const row of student.careerMap?.progress ?? []) {
+      for (const row of student.careerMap.progress) {
         expect(actionIds).toContain(row.actionId)
       }
     }
   })
 
-  it('covers a student nobody has put on the map yet', () => {
-    expect(students.filter((s) => s.careerMap === null)).not.toHaveLength(0)
+  it('covers a student with nothing recorded on the map yet', () => {
+    expect(
+      students.filter((s) => s.careerMap.progress.length === 0),
+    ).not.toHaveLength(0)
   })
 
-  it('covers a student on the map with no track chosen', () => {
+  it('covers a student with no track chosen', () => {
+    // The common case: everyone is on the general map until a path is picked.
     expect(
-      students.filter((s) => s.careerMap && s.careerMap.trackId === null),
+      students.filter((s) => s.careerMap.trackId === null),
     ).not.toHaveLength(0)
   })
 
@@ -297,9 +301,7 @@ describe('career map scenario coverage', () => {
 
   it('covers a waived action, with a reason', () => {
     const waived = students.flatMap((s) =>
-      (s.careerMap?.progress ?? []).filter(
-        (row) => row.status === 'not-applicable',
-      ),
+      s.careerMap.progress.filter((row) => row.status === 'not-applicable'),
     )
     expect(waived).not.toHaveLength(0)
     for (const row of waived) {
@@ -311,7 +313,7 @@ describe('career map scenario coverage', () => {
     const reasons = new Set(loadLookups().moveReasons.map((r) => r.id))
 
     for (const student of students) {
-      for (const row of student.careerMap?.progress ?? []) {
+      for (const row of student.careerMap.progress) {
         if (row.movedToTerm === null) continue
         expect(row.moveReasonId).not.toBeNull()
         expect(reasons).toContain(row.moveReasonId)
@@ -319,19 +321,25 @@ describe('career map scenario coverage', () => {
     }
   })
 
-  it('covers a student who joined the map after Year 1', () => {
-    // The transfer case. Without one in the fixture, nothing exercises the
-    // "before you joined" path and a transfer's first screen is a wall of red.
-    expect(
-      students.filter(
-        (s) => s.careerMap && s.careerMap.startedTerm !== 'y1-fall',
-      ),
-    ).not.toHaveLength(0)
+  it('covers a student who arrived after their first year', () => {
+    // The transfer case, which is what makes the "before they were here" path
+    // render at all. Where a student starts on the map is derived from
+    // `entryTerm`, so a fixture set where everybody entered as a freshman never
+    // exercises it.
+    const started = new Map(
+      students.map((s) => [
+        s.id,
+        entryYearLevel(s.entryTerm, s.classification),
+      ]),
+    )
+    expect([...started.values()].filter((level) => level > 1)).not.toHaveLength(
+      0,
+    )
   })
 
   it('covers an action an advisor carried into a later term, with a reason', () => {
     const moved = students.flatMap((s) =>
-      (s.careerMap?.progress ?? []).filter((row) => row.movedToTerm !== null),
+      s.careerMap.progress.filter((row) => row.movedToTerm !== null),
     )
 
     expect(moved).not.toHaveLength(0)
@@ -345,7 +353,7 @@ describe('career map scenario coverage', () => {
     // semester gets the same treatment, and both paths need a fixture.
     const reasons = new Set(
       students.flatMap((s) =>
-        (s.careerMap?.progress ?? [])
+        s.careerMap.progress
           .filter((row) => row.movedToTerm !== null)
           .map((row) => row.moveReasonId),
       ),
@@ -368,7 +376,7 @@ describe('career map scenario coverage', () => {
 
     const withStaleWork = students.filter((student) => {
       const map = student.careerMap
-      if (!map?.trackId) return false
+      if (!map.trackId) return false
       const track = trackPlacements.get(map.trackId) ?? new Set()
       const excluded = new Set(
         loadCareerTracks().find((t) => t.id === map.trackId)?.excludes ?? [],
@@ -383,3 +391,21 @@ describe('career map scenario coverage', () => {
     expect(withStaleWork).not.toHaveLength(0)
   })
 })
+
+/**
+ * Which year level a student was in when they arrived, from their entry term
+ * and where they are now. 1 for anyone who started here as a freshman.
+ */
+function entryYearLevel(entryTerm: string, classification: string): number {
+  const YEARS: Record<string, number> = {
+    freshman: 1,
+    sophomore: 2,
+    junior: 3,
+    senior: 4,
+  }
+  const enrolledTerms = Math.max(
+    0,
+    enrollmentTermsBetween(entryTerm, academicTermForDate()),
+  )
+  return Math.max(1, YEARS[classification] - Math.floor(enrolledTerms / 2))
+}

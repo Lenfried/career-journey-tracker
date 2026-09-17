@@ -6,9 +6,9 @@ import type { DashboardSummary } from '../types'
 /**
  * MVP screen 7 — the minimal dashboard.
  *
- * Three things: how many students, who is overdue, who changed recently. No
- * charts. The question this page answers is "what needs my attention today",
- * which is a list, not a trend.
+ * Four lists: how many students, who is overdue for follow-up, who is behind on
+ * their career map, and who changed recently. No charts. The question this page
+ * answers is "what needs my attention today", which is a list, not a trend.
  */
 export function DashboardView({ summary }: { summary: DashboardSummary }) {
   return (
@@ -57,6 +57,52 @@ export function DashboardView({ summary }: { summary: DashboardSummary }) {
                 </li>
               ),
             )}
+          </ul>
+        )}
+      </section>
+
+      <section className="mb-12">
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Behind on the career map
+          </h2>
+          {summary.behindCount > summary.behindOnMap.length ? (
+            <span className="text-muted-foreground text-sm tabular-nums">
+              showing {summary.behindOnMap.length} of {summary.behindCount}
+            </span>
+          ) : null}
+        </div>
+
+        {summary.behindOnMap.length === 0 ? (
+          <EmptyState
+            title="Nobody is behind on their plan."
+            hint="A student appears here when a career map action from a term that has already passed is still open."
+          />
+        ) : (
+          <ul className="divide-y overflow-hidden rounded-lg border">
+            {summary.behindOnMap.map(({ student, status }) => (
+              <li key={student.id}>
+                <Link
+                  href={`/students/${student.id}?tab=career-map`}
+                  className="hover:bg-muted/50 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-6 py-4"
+                >
+                  <span className="font-medium">{student.displayName}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {status.trackLabel ?? 'General career map'}
+                    {status.currentTermLabel
+                      ? ` · ${status.currentTermLabel}`
+                      : ''}
+                  </span>
+                  <span className="text-sm text-amber-800 tabular-nums dark:text-amber-300">
+                    {status.overdueCount}{' '}
+                    {status.overdueCount === 1 ? 'action' : 'actions'} behind
+                    <span className="text-muted-foreground ml-2">
+                      ({status.doneCount} of {status.applicableCount} done)
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         )}
       </section>

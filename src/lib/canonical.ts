@@ -259,7 +259,17 @@ export const careerActionProgressSchema = z
   })
 
 /**
- * A student's assignment to the map.
+ * A student's place on the map.
+ *
+ * There is one map and everyone is on it. A student does not get "assigned" to
+ * it and there is no version to pin: the map is the department's plan, the same
+ * eleven terms for everybody, and a track overlays a specialisation on top. No
+ * track means the general map, which is the common case.
+ *
+ * What is per-student is only this: which track, and what has happened term by
+ * term. Where a student sits on the map, and which terms predate their arrival,
+ * are derived from `entryTerm` and `classification` — they are facts about the
+ * student's own calendar, not something for an advisor to keep in step by hand.
  *
  * Progress is sparse — only actions an advisor has actually touched appear, and
  * the service layer fills the rest in at `not-started`, the same way the
@@ -272,19 +282,6 @@ export const careerActionProgressSchema = z
  * erasing it punishes exactly the exploration this tool exists to encourage.
  */
 export const studentCareerMapSchema = z.strictObject({
-  mapId: z.string().min(1),
-  /** Pinned at assignment. See `careerMapSchema.version`. */
-  mapVersion: z.number().int().positive(),
-  /**
-   * The term this student joined the map.
-   *
-   * Everything before it is history, not homework: a transfer who arrived in
-   * Year 3 was never asked to do the Year 1 actions, and showing them two years
-   * of red is both wrong and the fastest way to lose a student's trust in the
-   * plan. Those terms still render — an advisor can see what was skipped, and
-   * pull anything that still matters forward with `movedToTerm`.
-   */
-  startedTerm: careerMapTermSchema,
   trackId: z.string().nullable(),
   trackSetAt: timestampSchema.nullable(),
   progress: z.array(careerActionProgressSchema),
@@ -398,8 +395,8 @@ export const studentRecordSchema = studentIdentitySchema.extend({
   artifacts: z.array(readinessArtifactSchema),
   notes: z.array(advisingNoteSchema),
   milestones: z.array(careerMilestoneSchema),
-  /** `null` until an advisor assigns the map. */
-  careerMap: studentCareerMapSchema.nullable(),
+  /** Everyone is on the map. What varies is the track and the progress. */
+  careerMap: studentCareerMapSchema,
 })
 
 /* -------------------------------------------------------------------------- */

@@ -1260,13 +1260,6 @@
           "rationale": "Data-heavy products means schema work from week one."
         },
         {
-          "id": "rq_amara_4",
-          "name": "Git",
-          "category": "tool",
-          "importance": "important",
-          "rationale": null
-        },
-        {
           "id": "rq_amara_5",
           "name": "System design",
           "category": "technical",
@@ -1384,9 +1377,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y3-fall",
         "trackId": "track_swe",
         "trackSetAt": "2024-10-02T15:00:00.000Z",
         "progress": [
@@ -1603,7 +1593,11 @@
       "artifacts": [],
       "notes": [],
       "milestones": [],
-      "careerMap": null
+      "careerMap": {
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": []
+      }
     },
     {
       "id": "stu_raghunathan_priya",
@@ -1762,11 +1756,8 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
-        "trackId": "track_ml_research",
-        "trackSetAt": "2025-03-04T15:00:00.000Z",
+        "trackId": null,
+        "trackSetAt": null,
         "progress": [
           {
             "actionId": "act_advisor_intake",
@@ -1997,9 +1988,6 @@
       ],
       "milestones": [],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": null,
         "trackSetAt": null,
         "progress": [
@@ -2174,7 +2162,11 @@
           "recordedBy": "Dr. Helena Vance"
         }
       ],
-      "careerMap": null
+      "careerMap": {
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": []
+      }
     },
     {
       "id": "stu_achebe_rosalind",
@@ -2450,9 +2442,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": "track_ml_research",
         "trackSetAt": "2023-11-10T15:00:00.000Z",
         "progress": [
@@ -2598,13 +2587,13 @@
           },
           {
             "actionId": "act_grfp",
-            "status": "in-progress",
+            "status": "not-applicable",
             "completedCount": 0,
             "movedToTerm": null,
             "moveReasonId": null,
             "markedBy": "Dr. Maya Chen-Rivera",
             "markedAt": "2026-09-09T15:00:00.000Z",
-            "note": null
+            "note": "Decided against grad school applications — see the February referral note. Left visible rather than deleted so the plan does not read as unfinished."
           }
         ]
       }
@@ -2766,9 +2755,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": "track_swe",
         "trackSetAt": "2026-02-11T15:00:00.000Z",
         "progress": [
@@ -2917,9 +2903,6 @@
       ],
       "milestones": [],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": null,
         "trackSetAt": null,
         "progress": [
@@ -3111,9 +3094,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": null,
         "trackSetAt": null,
         "progress": [
@@ -3352,9 +3332,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": "track_swe",
         "trackSetAt": "2025-04-08T15:00:00.000Z",
         "progress": [
@@ -3543,9 +3520,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": "track_quant",
         "trackSetAt": "2025-09-18T15:00:00.000Z",
         "progress": [
@@ -3775,9 +3749,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": "track_swe",
         "trackSetAt": "2023-02-15T15:00:00.000Z",
         "progress": [
@@ -3946,9 +3917,6 @@
       ],
       "milestones": [],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": null,
         "trackSetAt": null,
         "progress": [
@@ -4081,7 +4049,11 @@
         }
       ],
       "milestones": [],
-      "careerMap": null
+      "careerMap": {
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": []
+      }
     },
     {
       "id": "stu_al_rashid_zainab",
@@ -4248,9 +4220,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": "track_ml_research",
         "trackSetAt": "2025-10-14T15:00:00.000Z",
         "progress": [
@@ -4441,7 +4410,11 @@
           "recordedBy": "Dr. Helena Vance"
         }
       ],
-      "careerMap": null
+      "careerMap": {
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": []
+      }
     },
     {
       "id": "stu_chu_mei_ling",
@@ -4536,7 +4509,11 @@
           "recordedBy": "Dr. Maya Chen-Rivera"
         }
       ],
-      "careerMap": null
+      "careerMap": {
+        "trackId": null,
+        "trackSetAt": null,
+        "progress": []
+      }
     },
     {
       "id": "stu_nakamura_obi_theo",
@@ -4627,9 +4604,6 @@
         }
       ],
       "careerMap": {
-        "mapId": "map_general",
-        "mapVersion": 1,
-        "startedTerm": "y1-fall",
         "trackId": null,
         "trackSetAt": null,
         "progress": [
