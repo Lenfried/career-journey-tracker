@@ -46,6 +46,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 <Link href="/students" className="hover:text-foreground">
                   Students
                 </Link>
+                <Link
+                  href="/admin/career-map"
+                  className="hover:text-foreground"
+                >
+                  Career map admin
+                </Link>
               </div>
             </div>
             {/* Authentication is Phase 2. Until then this is a fixed label, not
