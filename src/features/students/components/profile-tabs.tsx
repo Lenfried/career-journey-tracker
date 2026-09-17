@@ -15,6 +15,7 @@ export const PROFILE_TABS = [
   { id: 'notes', label: 'Notes' },
   { id: 'milestones', label: 'Milestones' },
   { id: 'skills', label: 'Skills' },
+  { id: 'career-map', label: 'Career map' },
 ] as const
 
 export type ProfileTab = (typeof PROFILE_TABS)[number]['id']

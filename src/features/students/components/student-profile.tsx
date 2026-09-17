@@ -1,3 +1,5 @@
+import { CareerMapTimeline } from '@/features/career-map/components/career-map-timeline'
+import { getCareerMap } from '@/features/career-map/queries'
 import { CareerGoalCard } from '@/features/goals/components/career-goal-card'
 import { getStudentGoal } from '@/features/goals/queries'
 import { MilestoneList } from '@/features/milestones/components/milestone-list'
@@ -43,6 +45,7 @@ export async function StudentProfile({
       {tab === 'notes' ? <NotesTab studentId={student.id} /> : null}
       {tab === 'milestones' ? <MilestonesTab studentId={student.id} /> : null}
       {tab === 'skills' ? <SkillsTab studentId={student.id} /> : null}
+      {tab === 'career-map' ? <CareerMapTab studentId={student.id} /> : null}
     </>
   )
 }
@@ -80,4 +83,8 @@ async function MilestonesTab({ studentId }: { studentId: string }) {
 
 async function SkillsTab({ studentId }: { studentId: string }) {
   return <SkillsGapView skills={await getStudentSkills(studentId)} />
+}
+
+async function CareerMapTab({ studentId }: { studentId: string }) {
+  return <CareerMapTimeline map={await getCareerMap(studentId)} />
 }
