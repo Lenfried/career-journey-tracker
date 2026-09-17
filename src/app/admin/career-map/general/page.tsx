@@ -1,6 +1,6 @@
 import { AdminErrorBanner } from '@/features/career-map/components/admin/admin-error-banner'
 import { AdminNav } from '@/features/career-map/components/admin/admin-nav'
-import { GeneralMapAdmin } from '@/features/career-map/components/admin/general-map-admin'
+import { GeneralMapAdmin } from '@/features/career-map/components/admin/general-map-board-admin'
 import { getCareerMapTemplate } from '@/features/career-map/queries'
 
 export const dynamic = 'force-dynamic'
@@ -14,28 +14,23 @@ export default async function GeneralMapAdminPage({
 }) {
   const { error } = await searchParams
   const { map, catalog, categories } = await getCareerMapTemplate()
-  const categoryLabel = new Map(categories.map((c) => [c.id, c.label]))
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-10">
+    <main className="mx-auto w-full max-w-7xl px-6 py-10">
       <header className="mb-6">
         <h1 className="text-3xl font-semibold tracking-tight">
           Career map admin
         </h1>
         <p className="text-muted-foreground mt-1">
-          Edit the shared action catalog, the general map, and tracks. Every
-          student reads from this.
+          Arrange the shared foundation every student receives. Specialization
+          overlays are edited separately.
         </p>
       </header>
 
       <AdminNav active="general" />
       <AdminErrorBanner message={error} />
 
-      <GeneralMapAdmin
-        map={map}
-        catalog={catalog}
-        categoryLabel={categoryLabel}
-      />
+      <GeneralMapAdmin map={map} catalog={catalog} categories={categories} />
     </main>
   )
 }
