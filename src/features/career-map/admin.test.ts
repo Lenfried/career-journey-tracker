@@ -2,23 +2,24 @@ import { describe, expect, it } from 'vitest'
 import type {
   CareerAction,
   CareerMap,
-  CareerTrack,
+  CareerSpecialization,
   StudentRecord,
 } from '@/lib/canonical'
 import {
   addRequiredSkill,
   applyMapPlacements,
-  applyTrackOverlay,
+  applySpecializationOverlay,
   createCareerAction,
-  createCareerTrack,
+  createCareerSpecialization,
   deleteCareerAction,
-  deleteCareerTrack,
+  deleteCareerSpecialization,
   describeActionUsage,
-  describeTrackUsage,
+  describeSpecializationUsage,
   removeRequiredSkill,
   slugify,
   updateCareerAction,
-  updateCareerTrackDetails,
+  updateCareerSpecializationDetails,
+  type SpecializationOverride,
 } from './admin'
 
 const action = (
@@ -47,9 +48,10 @@ const MAP: CareerMap = {
   ],
 }
 
-const TRACK: CareerTrack = {
-  id: 'track_swe',
-  label: 'Software engineering',
+const SPECIALIZATION: CareerSpecialization = {
+  id: 'specialization_backend',
+  trackId: 'track_software_engineering',
+  label: 'Backend engineering',
   description: 'Backend focus.',
   placements: [{ actionId: 'act_c', term: 'y2-fall' }],
   excludes: ['act_b'],
@@ -67,7 +69,13 @@ const TRACK: CareerTrack = {
 const student = (overrides: Partial<StudentRecord> = {}): StudentRecord =>
   ({
     id: 'stu_test',
-    careerMap: { trackId: null, trackSetAt: null, progress: [] },
+    careerMap: {
+      trackId: null,
+      trackSetAt: null,
+      specializationId: null,
+      specializationSetAt: null,
+      progress: [],
+    },
     ...overrides,
   }) as StudentRecord
 
@@ -133,7 +141,9 @@ describe('createCareerAction / updateCareerAction / deleteCareerAction', () => {
 
 describe('describeActionUsage', () => {
   it('is null when nothing references the action', () => {
-    expect(describeActionUsage('act_unused', MAP, [TRACK], [])).toBeNull()
+    expect(
+      describeActionUsage('act_unused', MAP, [SPECIALIZATION], []),
+    ).toBeNull()
   })
 
   it('reports the general map, tracks and students that reference it', () => {
@@ -142,6 +152,8 @@ describe('describeActionUsage', () => {
         careerMap: {
           trackId: null,
           trackSetAt: null,
+          specializationId: null,
+          specializationSetAt: null,
           progress: [
             {
               actionId: 'act_a',
@@ -158,14 +170,14 @@ describe('describeActionUsage', () => {
       }),
     ]
 
-    const usage = describeActionUsage('act_a', MAP, [TRACK], students)
+    const usage = describeActionUsage('act_a', MAP, [SPECIALIZATION], students)
     expect(usage).toContain('general map')
     expect(usage).toContain('1 student')
   })
 
-  it('reports a track that only excludes the action', () => {
-    expect(describeActionUsage('act_b', MAP, [TRACK], [])).toContain(
-      'Software engineering',
+  it('reports a specialization that only excludes the action', () => {
+    expect(describeActionUsage('act_b', MAP, [SPECIALIZATION], [])).toContain(
+      'Backend engineering',
     )
   })
 })
@@ -196,62 +208,88 @@ describe('applyMapPlacements', () => {
   })
 })
 
-describe('createCareerTrack / updateCareerTrackDetails / deleteCareerTrack', () => {
-  it('creates a track with empty overlays and a generated id', () => {
-    const next = createCareerTrack([TRACK], {
+describe('career specialization details', () => {
+  it('creates a specialization with empty overlays and a generated id', () => {
+    const next = createCareerSpecialization([SPECIALIZATION], {
+      trackId: 'track_cybersecurity',
       label: 'Security',
       description: 'Cyber focus.',
     })
     const created = next[1]
-    expect(created?.id).toBe('track_security')
+    expect(created?.id).toBe('specialization_security')
+    expect(created?.trackId).toBe('track_cybersecurity')
     expect(created?.placements).toEqual([])
     expect(created?.excludes).toEqual([])
     expect(created?.requiredSkills).toEqual([])
   })
 
   it('updates label and description without touching overlays', () => {
-    const next = updateCareerTrackDetails([TRACK], 'track_swe', {
-      label: 'Backend engineering',
-      description: 'Updated.',
-    })
-    expect(next[0]?.label).toBe('Backend engineering')
-    expect(next[0]?.placements).toEqual(TRACK.placements)
+    const next = updateCareerSpecializationDetails(
+      [SPECIALIZATION],
+      'specialization_backend',
+      {
+        trackId: 'track_software_engineering',
+        label: 'Platform engineering',
+        description: 'Updated.',
+      },
+    )
+    expect(next[0]?.label).toBe('Platform engineering')
+    expect(next[0]?.placements).toEqual(SPECIALIZATION.placements)
   })
 
-  it('deletes only the matching track', () => {
-    const next = deleteCareerTrack([TRACK], 'track_swe')
+  it('deletes only the matching specialization', () => {
+    const next = deleteCareerSpecialization(
+      [SPECIALIZATION],
+      'specialization_backend',
+    )
     expect(next).toEqual([])
   })
 })
 
-describe('describeTrackUsage', () => {
-  it('is null when no student is on the track', () => {
-    expect(describeTrackUsage('track_swe', [student()])).toBeNull()
+describe('describeSpecializationUsage', () => {
+  it('is null when no student is in the specialization', () => {
+    expect(
+      describeSpecializationUsage('specialization_backend', [student()]),
+    ).toBeNull()
   })
 
-  it('counts students currently on the track', () => {
+  it('counts students currently in the specialization', () => {
     const students = [
       student({
-        careerMap: { trackId: 'track_swe', trackSetAt: null, progress: [] },
+        careerMap: {
+          trackId: 'track_software_engineering',
+          trackSetAt: '2026-01-01T00:00:00.000Z',
+          specializationId: 'specialization_backend',
+          specializationSetAt: '2026-01-01T00:00:00.000Z',
+          progress: [],
+        },
       }),
       student({
-        careerMap: { trackId: 'track_swe', trackSetAt: null, progress: [] },
+        careerMap: {
+          trackId: 'track_software_engineering',
+          trackSetAt: '2026-01-01T00:00:00.000Z',
+          specializationId: 'specialization_backend',
+          specializationSetAt: '2026-01-01T00:00:00.000Z',
+          progress: [],
+        },
       }),
-      student({ careerMap: { trackId: null, trackSetAt: null, progress: [] } }),
+      student(),
     ]
-    expect(describeTrackUsage('track_swe', students)).toContain('2 student')
+    expect(
+      describeSpecializationUsage('specialization_backend', students),
+    ).toContain('2 student')
   })
 })
 
-describe('applyTrackOverlay', () => {
+describe('applySpecializationOverlay', () => {
   it('rebuilds placements and excludes from a full override map', () => {
-    const next = applyTrackOverlay(
-      TRACK,
-      new Map<string, 'default' | 'excluded' | string>([
+    const next = applySpecializationOverlay(
+      SPECIALIZATION,
+      new Map<string, SpecializationOverride>([
         ['act_a', 'excluded'],
         ['act_b', 'default'], // clears the existing exclude
         ['act_c', 'y3-fall'],
-      ]) as never,
+      ]),
     )
     expect(next.excludes).toEqual(['act_a'])
     expect(next.placements).toEqual([{ actionId: 'act_c', term: 'y3-fall' }])
@@ -260,7 +298,7 @@ describe('applyTrackOverlay', () => {
 
 describe('addRequiredSkill / removeRequiredSkill', () => {
   it('adds a skill with a generated id', () => {
-    const next = addRequiredSkill(TRACK, {
+    const next = addRequiredSkill(SPECIALIZATION, {
       name: 'Distributed systems',
       category: 'technical',
       importance: 'important',
@@ -271,7 +309,7 @@ describe('addRequiredSkill / removeRequiredSkill', () => {
   })
 
   it('removes only the matching skill', () => {
-    const next = removeRequiredSkill(TRACK, 'skill_sql')
+    const next = removeRequiredSkill(SPECIALIZATION, 'skill_sql')
     expect(next.requiredSkills).toEqual([])
   })
 })

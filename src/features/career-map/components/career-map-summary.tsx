@@ -13,9 +13,7 @@ export function CareerMapSummary({ map }: { map: CareerMapView }) {
     <div className="bg-card rounded-lg border">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b px-6 py-4">
         <div className="min-w-0">
-          <h3 className="font-medium">
-            {map.trackLabel ?? 'General career map'}
-          </h3>
+          <h3 className="font-medium">{map.mapLabel}</h3>
           <p className="text-muted-foreground mt-0.5 text-sm">
             {map.position.currentTermLabel ??
               (map.position.state === 'paused'
@@ -42,7 +40,12 @@ export function CareerMapSummary({ map }: { map: CareerMapView }) {
         </div>
       </div>
 
-      <dl className="divide-muted grid gap-x-6 gap-y-3 px-6 py-4 text-sm sm:grid-cols-3">
+      <dl className="divide-muted grid gap-x-6 gap-y-3 px-6 py-4 text-sm sm:grid-cols-2 lg:grid-cols-5">
+        <Fact term="Track" detail={map.trackLabel ?? 'Exploring options'} />
+        <Fact
+          term="Specialization"
+          detail={map.specializationLabel ?? 'Not selected yet'}
+        />
         <Fact
           term="Started this plan at"
           detail={map.position.startedTermLabel}
@@ -57,6 +60,11 @@ export function CareerMapSummary({ map }: { map: CareerMapView }) {
         />
         <Fact term="Plan last reviewed" detail={map.lastReviewedLabel} />
       </dl>
+      {map.specializationDescription || map.trackDescription ? (
+        <p className="text-muted-foreground border-t px-6 py-3 text-sm">
+          {map.specializationDescription ?? map.trackDescription}
+        </p>
+      ) : null}
     </div>
   )
 }

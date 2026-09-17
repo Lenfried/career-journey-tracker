@@ -6,6 +6,7 @@
 // this feature's business — right now, the roster filter.
 
 import { z } from 'zod'
+import { STUDENT_ROSTER_SORTS } from './types'
 
 export {
   studentIdentitySchema,
@@ -23,6 +24,8 @@ export {
  */
 export const studentFiltersSchema = z.object({
   search: z.string().trim().max(100).optional().catch(undefined),
+  sort: z.enum(STUDENT_ROSTER_SORTS).optional().catch(undefined),
+  direction: z.enum(['asc', 'desc']).optional().catch(undefined),
 })
 
 export type StudentFiltersInput = z.infer<typeof studentFiltersSchema>

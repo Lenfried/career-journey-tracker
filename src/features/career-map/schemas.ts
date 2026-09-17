@@ -9,7 +9,7 @@ import {
 } from '@/lib/canonical'
 import type {
   CareerActionInput,
-  CareerTrackInput,
+  CareerSpecializationInput,
   RequiredSkillInput,
 } from './admin'
 
@@ -20,11 +20,12 @@ export {
   careerActionStatusSchema,
   careerMapSchema,
   careerMapTermSchema,
+  careerSpecializationSchema,
   careerTrackSchema,
   studentCareerMapSchema,
 } from '@/lib/canonical'
 
-// Week 2 adds `markCareerActionSchema` and `setCareerTrackSchema` here — the
+// Week 2 adds `markCareerActionSchema` and `setCareerPathSchema` here — the
 // same schemas the forms resolve against, once completion is a student-facing
 // write rather than an admin one.
 
@@ -87,10 +88,11 @@ export const careerActionFormSchema = z
     }
   })
 
-export const careerTrackFormSchema = z.object({
+export const careerSpecializationFormSchema = z.object({
+  trackId: z.string().trim().min(1, 'Pick a track'),
   label: z.string().trim().min(1, 'Label is required'),
   description: z.string().trim().min(1, 'Description is required'),
-}) satisfies z.ZodType<CareerTrackInput>
+}) satisfies z.ZodType<CareerSpecializationInput>
 
 export const requiredSkillFormSchema = z
   .object({
@@ -112,8 +114,8 @@ export const mapAssignmentValueSchema = z.union([
   z.literal(''),
 ])
 
-/** One cell of a track's overlay table: a term, excluded, or the default. */
-export const trackOverrideValueSchema = z.union([
+/** One cell of a specialization overlay: a term, excluded, or the default. */
+export const specializationOverrideValueSchema = z.union([
   careerMapTermSchema,
   z.literal('excluded'),
   z.literal('default'),

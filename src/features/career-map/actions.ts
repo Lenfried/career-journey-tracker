@@ -3,7 +3,7 @@
 // career-map — actions
 //
 // Writes for the department's template: the action catalog, the general map,
-// and the tracks layered over it. Every function here is thin — parse the
+// and the specializations layered over it. Every function here is thin — parse the
 // FormData with a schema from `./schemas.ts`, hand the parsed input to a pure
 // function in `./admin.ts`, persist the result, redirect back.
 //
@@ -15,9 +15,9 @@
 // in `authedAction()` the day auth lands, before this app goes anywhere near
 // production data.
 //
-// Per-student writes — markCareerAction(), setCareerTrack(),
+// Per-student writes — markCareerAction(), setCareerPath(),
 // assignCareerMap() — are a separate, later piece of work: a student's own
-// progress and track choice, not the shared template these edit.
+// progress and taxonomy choice, not the shared template these edit.
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -26,31 +26,32 @@ import { loadDataset, saveDataset } from '@/lib/fixtures'
 import {
   addRequiredSkill,
   applyMapPlacements,
-  applyTrackOverlay,
+  applySpecializationOverlay,
   createCareerAction,
-  createCareerTrack,
+  createCareerSpecialization,
   deleteCareerAction,
-  deleteCareerTrack,
+  deleteCareerSpecialization,
   describeActionUsage,
-  describeTrackUsage,
+  describeSpecializationUsage,
   removeRequiredSkill,
-  replaceTrack,
+  replaceSpecialization,
   updateCareerAction,
-  updateCareerTrackDetails,
-  type TrackOverride,
+  updateCareerSpecializationDetails,
+  type SpecializationOverride,
 } from './admin'
 import {
   careerActionFormSchema,
-  careerTrackFormSchema,
+  careerSpecializationFormSchema,
   mapAssignmentValueSchema,
   requiredSkillFormSchema,
-  trackOverrideValueSchema,
+  specializationOverrideValueSchema,
 } from './schemas'
 
 const CATALOG_PATH = '/admin/career-map/catalog'
 const GENERAL_PATH = '/admin/career-map/general'
 const TRACKS_PATH = '/admin/career-map/tracks'
-const trackPath = (id: string) => `/admin/career-map/tracks/${id}`
+const specializationPath = (id: string) =>
+  `/admin/career-map/specializations/${id}`
 
 /** Sends the admin back to `path` with a message the page reads from `?error=`. */
 function fail(path: string, message: string): never {
@@ -106,7 +107,7 @@ export async function deleteCareerActionAction(actionId: string) {
   const usage = describeActionUsage(
     actionId,
     map,
-    dataset.careerTracks,
+    dataset.careerSpecializations,
     dataset.students,
   )
   if (usage) fail(CATALOG_PATH, `Can't delete this action — it is ${usage}.`)
@@ -156,122 +157,185 @@ export async function updateGeneralMapAction(formData: FormData) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Tracks                                                                      */
+/* Specializations                                                             */
 /* -------------------------------------------------------------------------- */
 
-export async function createCareerTrackAction(formData: FormData) {
-  const parsed = careerTrackFormSchema.safeParse(Object.fromEntries(formData))
+export async function createCareerSpecializationAction(formData: FormData) {
+  const parsed = careerSpecializationFormSchema.safeParse(
+    Object.fromEntries(formData),
+  )
   if (!parsed.success) fail(TRACKS_PATH, firstIssue(parsed.error))
 
   const dataset = loadDataset()
+  if (!dataset.careerTracks.some((track) => track.id === parsed.data.trackId)) {
+    fail(TRACKS_PATH, 'That track no longer exists.')
+  }
   saveDataset({
     ...dataset,
-    careerTracks: createCareerTrack(dataset.careerTracks, parsed.data),
-  })
-  revalidatePath(TRACKS_PATH)
-  redirect(TRACKS_PATH)
-}
-
-export async function updateCareerTrackDetailsAction(
-  trackId: string,
-  formData: FormData,
-) {
-  const parsed = careerTrackFormSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) fail(trackPath(trackId), firstIssue(parsed.error))
-
-  const dataset = loadDataset()
-  saveDataset({
-    ...dataset,
-    careerTracks: updateCareerTrackDetails(
-      dataset.careerTracks,
-      trackId,
+    careerSpecializations: createCareerSpecialization(
+      dataset.careerSpecializations,
       parsed.data,
     ),
   })
-  revalidatePath(trackPath(trackId))
   revalidatePath(TRACKS_PATH)
-  redirect(trackPath(trackId))
+  redirect(TRACKS_PATH)
 }
 
-export async function deleteCareerTrackAction(trackId: string) {
+export async function updateCareerSpecializationDetailsAction(
+  specializationId: string,
+  formData: FormData,
+) {
+  const parsed = careerSpecializationFormSchema.safeParse(
+    Object.fromEntries(formData),
+  )
+  if (!parsed.success) {
+    fail(specializationPath(specializationId), firstIssue(parsed.error))
+  }
+
   const dataset = loadDataset()
-  const usage = describeTrackUsage(trackId, dataset.students)
-  if (usage) fail(TRACKS_PATH, `Can't delete this track — ${usage}.`)
+  if (!dataset.careerTracks.some((track) => track.id === parsed.data.trackId)) {
+    fail(specializationPath(specializationId), 'That track no longer exists.')
+  }
+  const existing = dataset.careerSpecializations.find(
+    (item) => item.id === specializationId,
+  )
+  if (!existing) {
+    fail(TRACKS_PATH, 'That specialization no longer exists.')
+  }
+  if (
+    existing.trackId !== parsed.data.trackId &&
+    describeSpecializationUsage(specializationId, dataset.students)
+  ) {
+    fail(
+      specializationPath(specializationId),
+      'Move the assigned students before changing this specialization’s track.',
+    )
+  }
+  saveDataset({
+    ...dataset,
+    careerSpecializations: updateCareerSpecializationDetails(
+      dataset.careerSpecializations,
+      specializationId,
+      parsed.data,
+    ),
+  })
+  revalidatePath(specializationPath(specializationId))
+  revalidatePath(TRACKS_PATH)
+  redirect(specializationPath(specializationId))
+}
+
+export async function deleteCareerSpecializationAction(
+  specializationId: string,
+) {
+  const dataset = loadDataset()
+  const usage = describeSpecializationUsage(specializationId, dataset.students)
+  if (usage) {
+    fail(TRACKS_PATH, `Can't delete this specialization — ${usage}.`)
+  }
 
   saveDataset({
     ...dataset,
-    careerTracks: deleteCareerTrack(dataset.careerTracks, trackId),
+    careerSpecializations: deleteCareerSpecialization(
+      dataset.careerSpecializations,
+      specializationId,
+    ),
   })
   revalidatePath(TRACKS_PATH)
   redirect(TRACKS_PATH)
 }
 
-/** One save for a track's whole overlay table — same shape as the general map. */
-export async function updateTrackOverlayAction(
-  trackId: string,
+/** One save for a specialization overlay — same shape as the general map. */
+export async function updateSpecializationOverlayAction(
+  specializationId: string,
   formData: FormData,
 ) {
   const dataset = loadDataset()
-  const track = dataset.careerTracks.find((t) => t.id === trackId)
-  if (!track) fail(TRACKS_PATH, 'That track no longer exists.')
+  const specialization = dataset.careerSpecializations.find(
+    (item) => item.id === specializationId,
+  )
+  if (!specialization) {
+    fail(TRACKS_PATH, 'That specialization no longer exists.')
+  }
 
-  const overrides = new Map<string, TrackOverride>()
+  const overrides = new Map<string, SpecializationOverride>()
   for (const action of dataset.careerActions) {
-    const parsed = trackOverrideValueSchema.safeParse(
+    const parsed = specializationOverrideValueSchema.safeParse(
       formData.get(`override-${action.id}`),
     )
     if (!parsed.success) {
-      fail(trackPath(trackId), `"${action.title}" has an invalid choice.`)
+      fail(
+        specializationPath(specializationId),
+        `"${action.title}" has an invalid choice.`,
+      )
     }
     overrides.set(action.id, parsed.data)
   }
 
-  const updated = applyTrackOverlay(track, overrides)
+  const updated = applySpecializationOverlay(specialization, overrides)
   saveDataset({
     ...dataset,
-    careerTracks: replaceTrack(dataset.careerTracks, updated),
+    careerSpecializations: replaceSpecialization(
+      dataset.careerSpecializations,
+      updated,
+    ),
   })
-  revalidatePath(trackPath(trackId))
-  redirect(trackPath(trackId))
+  revalidatePath(specializationPath(specializationId))
+  redirect(specializationPath(specializationId))
 }
 
 /* -------------------------------------------------------------------------- */
-/* Required skills, per track                                                  */
+/* Required skills, per specialization                                         */
 /* -------------------------------------------------------------------------- */
 
 export async function addRequiredSkillAction(
-  trackId: string,
+  specializationId: string,
   formData: FormData,
 ) {
   const parsed = requiredSkillFormSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) fail(trackPath(trackId), firstIssue(parsed.error))
+  if (!parsed.success) {
+    fail(specializationPath(specializationId), firstIssue(parsed.error))
+  }
 
   const dataset = loadDataset()
-  const track = dataset.careerTracks.find((t) => t.id === trackId)
-  if (!track) fail(TRACKS_PATH, 'That track no longer exists.')
+  const specialization = dataset.careerSpecializations.find(
+    (item) => item.id === specializationId,
+  )
+  if (!specialization) {
+    fail(TRACKS_PATH, 'That specialization no longer exists.')
+  }
 
-  const updated = addRequiredSkill(track, parsed.data)
+  const updated = addRequiredSkill(specialization, parsed.data)
   saveDataset({
     ...dataset,
-    careerTracks: replaceTrack(dataset.careerTracks, updated),
+    careerSpecializations: replaceSpecialization(
+      dataset.careerSpecializations,
+      updated,
+    ),
   })
-  revalidatePath(trackPath(trackId))
-  redirect(trackPath(trackId))
+  revalidatePath(specializationPath(specializationId))
+  redirect(specializationPath(specializationId))
 }
 
 export async function removeRequiredSkillAction(
-  trackId: string,
+  specializationId: string,
   skillId: string,
 ) {
   const dataset = loadDataset()
-  const track = dataset.careerTracks.find((t) => t.id === trackId)
-  if (!track) fail(TRACKS_PATH, 'That track no longer exists.')
+  const specialization = dataset.careerSpecializations.find(
+    (item) => item.id === specializationId,
+  )
+  if (!specialization) {
+    fail(TRACKS_PATH, 'That specialization no longer exists.')
+  }
 
-  const updated = removeRequiredSkill(track, skillId)
+  const updated = removeRequiredSkill(specialization, skillId)
   saveDataset({
     ...dataset,
-    careerTracks: replaceTrack(dataset.careerTracks, updated),
+    careerSpecializations: replaceSpecialization(
+      dataset.careerSpecializations,
+      updated,
+    ),
   })
-  revalidatePath(trackPath(trackId))
-  redirect(trackPath(trackId))
+  revalidatePath(specializationPath(specializationId))
+  redirect(specializationPath(specializationId))
 }

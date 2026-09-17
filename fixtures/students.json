@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "_comment": [
     "DEMO DATA. Every record here is fictional. EMPLIDs are in a reserved 99xxxxxx",
     "block and every email uses the .invalid TLD (RFC 2606) so no record here can be",
@@ -14,10 +14,10 @@
     "one is carrying a display state the UI needs to handle.",
     "",
     "`careerActions` is the action catalog: every recommended action defined once,",
-    "with a stable id. `careerMaps` places them in terms for everyone; `careerTracks`",
-    "layer specialisations on top by adding, moving or excluding placements. Student",
-    "progress is keyed on the action id and never on the track, which is what lets a",
-    "student change track without losing credit for what they have already done."
+    "with a stable id. `careerMaps` places them in terms for everyone; broad `careerTracks`",
+    "organize `careerSpecializations`, whose overlays add, move, or exclude placements. Student",
+    "progress is keyed on the action id and never on a specialization, which lets a",
+    "student change paths without losing credit for work already completed."
   ],
   "lookups": {
     "programs": [
@@ -896,9 +896,27 @@
   ],
   "careerTracks": [
     {
-      "id": "track_swe",
-      "label": "Software / backend engineering",
-      "description": "Industry software roles. Interview preparation starts a year earlier than most students expect, because postings open in August.",
+      "id": "track_software_engineering",
+      "label": "Software engineering",
+      "description": "Builds software products and services across web, mobile, embedded, and platform environments."
+    },
+    {
+      "id": "track_data_ai",
+      "label": "Data & AI",
+      "description": "Uses data, statistics, and machine learning to build analytical systems and advance computing research."
+    },
+    {
+      "id": "track_quantitative_computing",
+      "label": "Quantitative computing",
+      "description": "Applies software, mathematics, and statistics to financial markets and quantitative decision-making."
+    }
+  ],
+  "careerSpecializations": [
+    {
+      "id": "specialization_backend_engineering",
+      "trackId": "track_software_engineering",
+      "label": "Backend engineering",
+      "description": "Server-side software, APIs, databases, and distributed systems. Interview preparation starts early because internship postings often open in August.",
       "placements": [
         {
           "actionId": "act_hackathon",
@@ -982,9 +1000,10 @@
       ]
     },
     {
-      "id": "track_ml_research",
-      "label": "ML research / graduate school",
-      "description": "Research and graduate school. The lever is getting into a lab early; everything else follows from having done research.",
+      "id": "specialization_ai_ml_research",
+      "trackId": "track_data_ai",
+      "label": "AI/ML research",
+      "description": "Research-focused machine learning and graduate study. Getting into a lab early creates the experience, references, and research output this path requires.",
       "placements": [
         {
           "actionId": "act_math_core",
@@ -1011,10 +1030,7 @@
           "term": "y3-fall"
         }
       ],
-      "excludes": [
-        "act_sophomore_programs",
-        "act_career_fair_working"
-      ],
+      "excludes": ["act_sophomore_programs", "act_career_fair_working"],
       "requiredSkills": [
         {
           "id": "rq_ml_linalg",
@@ -1068,9 +1084,10 @@
       ]
     },
     {
-      "id": "track_quant",
-      "label": "Quantitative finance",
-      "description": "Trading and quantitative research. The sophomore-spring programs are the entry point, so this track front-loads everything.",
+      "id": "specialization_quantitative_research",
+      "trackId": "track_quantitative_computing",
+      "label": "Quantitative research",
+      "description": "Mathematical modeling, statistical research, and trading strategy. Sophomore programs are an early entry point, so preparation is front-loaded.",
       "placements": [
         {
           "actionId": "act_probability_drills",
@@ -1377,7 +1394,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_swe",
+        "trackId": "track_software_engineering",
         "trackSetAt": "2024-10-02T15:00:00.000Z",
         "progress": [
           {
@@ -1570,7 +1587,9 @@
             "markedAt": "2026-09-11T15:00:00.000Z",
             "note": "Never came up in onboarding — she arrived as a junior. Pulled into this term because it is the first thing backend interviewers ask to see."
           }
-        ]
+        ],
+        "specializationId": "specialization_backend_engineering",
+        "specializationSetAt": "2024-10-02T15:00:00.000Z"
       }
     },
     {
@@ -1596,7 +1615,9 @@
       "careerMap": {
         "trackId": null,
         "trackSetAt": null,
-        "progress": []
+        "progress": [],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -1849,7 +1870,9 @@
             "markedAt": "2026-02-18T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -2031,7 +2054,9 @@
             "markedAt": "2026-07-08T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -2165,7 +2190,9 @@
       "careerMap": {
         "trackId": null,
         "trackSetAt": null,
-        "progress": []
+        "progress": [],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -2442,7 +2469,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_ml_research",
+        "trackId": "track_data_ai",
         "trackSetAt": "2023-11-10T15:00:00.000Z",
         "progress": [
           {
@@ -2595,7 +2622,9 @@
             "markedAt": "2026-09-09T15:00:00.000Z",
             "note": "Decided against grad school applications — see the February referral note. Left visible rather than deleted so the plan does not read as unfinished."
           }
-        ]
+        ],
+        "specializationId": "specialization_ai_ml_research",
+        "specializationSetAt": "2023-11-10T15:00:00.000Z"
       }
     },
     {
@@ -2755,7 +2784,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_swe",
+        "trackId": "track_software_engineering",
         "trackSetAt": "2026-02-11T15:00:00.000Z",
         "progress": [
           {
@@ -2838,7 +2867,9 @@
             "markedAt": "2026-09-10T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": "specialization_backend_engineering",
+        "specializationSetAt": "2026-02-11T15:00:00.000Z"
       }
     },
     {
@@ -2926,7 +2957,9 @@
             "markedAt": "2026-09-11T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -3187,7 +3220,9 @@
             "markedAt": "2026-08-24T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -3332,7 +3367,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_swe",
+        "trackId": "track_software_engineering",
         "trackSetAt": "2025-04-08T15:00:00.000Z",
         "progress": [
           {
@@ -3375,7 +3410,9 @@
             "markedAt": "2026-09-09T15:00:00.000Z",
             "note": "Working 25 hrs/week and the resume slipped two terms. Moved into this term so it is the next thing we do, not a red mark from last year."
           }
-        ]
+        ],
+        "specializationId": "specialization_backend_engineering",
+        "specializationSetAt": "2025-04-08T15:00:00.000Z"
       }
     },
     {
@@ -3520,7 +3557,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_quant",
+        "trackId": "track_quantitative_computing",
         "trackSetAt": "2025-09-18T15:00:00.000Z",
         "progress": [
           {
@@ -3603,7 +3640,9 @@
             "markedAt": "2026-03-05T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": "specialization_quantitative_research",
+        "specializationSetAt": "2025-09-18T15:00:00.000Z"
       }
     },
     {
@@ -3749,7 +3788,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_swe",
+        "trackId": "track_software_engineering",
         "trackSetAt": "2023-02-15T15:00:00.000Z",
         "progress": [
           {
@@ -3842,7 +3881,9 @@
             "markedAt": "2026-05-20T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": "specialization_backend_engineering",
+        "specializationSetAt": "2023-02-15T15:00:00.000Z"
       }
     },
     {
@@ -3960,7 +4001,9 @@
             "markedAt": "2026-07-02T15:00:00.000Z",
             "note": "On leave through the fall fair. Picking it up when she is back."
           }
-        ]
+        ],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -4052,7 +4095,9 @@
       "careerMap": {
         "trackId": null,
         "trackSetAt": null,
-        "progress": []
+        "progress": [],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -4220,7 +4265,7 @@
         }
       ],
       "careerMap": {
-        "trackId": "track_ml_research",
+        "trackId": "track_data_ai",
         "trackSetAt": "2025-10-14T15:00:00.000Z",
         "progress": [
           {
@@ -4303,7 +4348,9 @@
             "markedAt": "2026-08-20T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": "specialization_ai_ml_research",
+        "specializationSetAt": "2025-10-14T15:00:00.000Z"
       }
     },
     {
@@ -4413,7 +4460,9 @@
       "careerMap": {
         "trackId": null,
         "trackSetAt": null,
-        "progress": []
+        "progress": [],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -4512,7 +4561,9 @@
       "careerMap": {
         "trackId": null,
         "trackSetAt": null,
-        "progress": []
+        "progress": [],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     },
     {
@@ -4627,7 +4678,9 @@
             "markedAt": "2026-09-11T15:00:00.000Z",
             "note": null
           }
-        ]
+        ],
+        "specializationId": null,
+        "specializationSetAt": null
       }
     }
   ]

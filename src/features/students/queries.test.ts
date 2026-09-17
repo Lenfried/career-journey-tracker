@@ -3,6 +3,7 @@ import {
   countStudents,
   getStudent,
   listRecentlyUpdatedStudents,
+  listStudentRoster,
   listStudents,
 } from './queries'
 
@@ -54,6 +55,59 @@ describe('listStudents', () => {
 
   it('returns an empty list when nothing matches', async () => {
     expect(await listStudents({ search: 'zzzzzz' })).toEqual([])
+  })
+})
+
+describe('listStudentRoster', () => {
+  it('sorts classifications in academic order', async () => {
+    const students = await listStudentRoster({ sort: 'classification' })
+    const order = ['freshman', 'sophomore', 'junior', 'senior']
+    const ranks = students.map((student) =>
+      order.indexOf(student.classification),
+    )
+
+    expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
+  })
+
+  it('sorts entry terms chronologically rather than alphabetically', async () => {
+    const students = await listStudentRoster({ sort: 'entry-term' })
+    const rank = (code: string) => {
+      const season = { SP: 0, SU: 1, FA: 2 }[
+        code.slice(-2) as 'SP' | 'SU' | 'FA'
+      ]
+      return Number(code.slice(0, 4)) * 3 + season
+    }
+    const ranks = students.map((student) => rank(student.entryTerm))
+
+    expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
+  })
+
+  it('sorts by specialization and keeps unselected students last', async () => {
+    const students = await listStudentRoster({
+      sort: 'specialization',
+      direction: 'desc',
+    })
+    const labels = students
+      .map((student) => student.specializationLabel)
+      .filter((label): label is string => label !== null)
+
+    expect(labels).toEqual([...labels].sort((a, b) => b.localeCompare(a)))
+    expect(
+      students
+        .slice(labels.length)
+        .every((student) => student.specializationLabel === null),
+    ).toBe(true)
+  })
+
+  it('includes both taxonomy levels and the current career term', async () => {
+    const students = await listStudentRoster()
+    const amara = students.find((student) => student.id === 'stu_okonkwo_amara')
+
+    expect(amara).toMatchObject({
+      trackLabel: 'Software engineering',
+      specializationLabel: 'Backend engineering',
+      currentCareerTermLabel: expect.any(String),
+    })
   })
 })
 

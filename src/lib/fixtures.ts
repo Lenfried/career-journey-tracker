@@ -21,6 +21,7 @@ import {
   type CanonicalDataset,
   type CareerAction,
   type CareerMap,
+  type CareerSpecialization,
   type CareerTrack,
   type StudentRecord,
 } from './canonical'
@@ -70,10 +71,10 @@ export function loadDataset(): CanonicalDataset {
  * to match — the only place this application persists an admin edit.
  *
  * Takes the whole dataset rather than a patch because every write today is
- * "the admin template changed": the catalog, the general map, or a track. A
- * caller builds the new dataset by spreading `loadDataset()` and replacing the
- * one array it changed, which keeps this function from needing to know which
- * slice moved.
+ * "the admin template changed": the catalog, the general map, a track, or a
+ * specialization. A caller builds the new dataset by spreading `loadDataset()`
+ * and replacing the one array it changed, which keeps this function from
+ * needing to know which slice moved.
  *
  * Validated before anything touches disk, same as a read — a form bug should
  * fail as a thrown error the admin screen can show, not as a fixture file that
@@ -116,7 +117,22 @@ export function loadCareerTrack(id: string | null): CareerTrack | undefined {
   return loadDataset().careerTracks.find((track) => track.id === id)
 }
 
-/** Every track, for the "switch track" picker. */
+/** Every broad career track, in display order. */
 export function loadCareerTracks(): CareerTrack[] {
   return loadDataset().careerTracks
+}
+
+/** One focused specialization by id, or `undefined`. */
+export function loadCareerSpecialization(
+  id: string | null,
+): CareerSpecialization | undefined {
+  if (!id) return undefined
+  return loadDataset().careerSpecializations.find(
+    (specialization) => specialization.id === id,
+  )
+}
+
+/** Every specialization, grouped in the UI by its parent track. */
+export function loadCareerSpecializations(): CareerSpecialization[] {
+  return loadDataset().careerSpecializations
 }

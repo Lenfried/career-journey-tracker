@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import { EmptyState } from '@/components/empty-state'
-import type { StudentSummary } from '../types'
+import type {
+  SortDirection,
+  StudentRosterRow,
+  StudentRosterSort,
+} from '../types'
 
 /**
  * MVP screen 1 — the roster.
@@ -12,9 +16,13 @@ import type { StudentSummary } from '../types'
 export function StudentRosterTable({
   students,
   search,
+  sort,
+  direction,
 }: {
-  students: StudentSummary[]
+  students: StudentRosterRow[]
   search?: string
+  sort: StudentRosterSort
+  direction: SortDirection
 }) {
   if (students.length === 0) {
     return (
@@ -30,21 +38,54 @@ export function StudentRosterTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <table className="w-full text-left">
+    <div className="overflow-x-auto rounded-lg border">
+      <table className="w-full min-w-[72rem] text-left">
         <thead className="bg-muted/50 text-muted-foreground text-sm">
           <tr>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Student
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              EMPLID
-            </th>
+            <SortHeader
+              label="Student"
+              value="name"
+              search={search}
+              sort={sort}
+              direction={direction}
+            />
+            <SortHeader
+              label="Entry term"
+              value="entry-term"
+              search={search}
+              sort={sort}
+              direction={direction}
+            />
+            <SortHeader
+              label="Classification"
+              value="classification"
+              search={search}
+              sort={sort}
+              direction={direction}
+            />
+            <SortHeader
+              label="Track"
+              value="track"
+              search={search}
+              sort={sort}
+              direction={direction}
+            />
+            <SortHeader
+              label="Specialization"
+              value="specialization"
+              search={search}
+              sort={sort}
+              direction={direction}
+            />
+            <SortHeader
+              label="Career term"
+              value="career-term"
+              search={search}
+              sort={sort}
+              direction={direction}
+            />
             <th scope="col" className="px-6 py-3 font-medium">
               Program
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Classification
             </th>
           </tr>
         </thead>
@@ -63,20 +104,71 @@ export function StudentRosterTable({
                     {student.enrollmentStatusLabel}
                   </span>
                 ) : null}
+                <span className="text-muted-foreground mt-0.5 block text-xs font-normal tabular-nums">
+                  {student.emplid}
+                </span>
               </td>
               <td className="text-muted-foreground px-6 py-4 tabular-nums">
-                {student.emplid}
-              </td>
-              <td className="text-muted-foreground px-6 py-4">
-                {student.programLabel}
+                {student.entryTermLabel}
               </td>
               <td className="text-muted-foreground px-6 py-4">
                 {student.classificationLabel}
+              </td>
+              <td className="text-muted-foreground px-6 py-4">
+                {student.trackLabel ?? 'Exploring options'}
+              </td>
+              <td className="text-muted-foreground px-6 py-4">
+                {student.specializationLabel ?? 'Not selected'}
+              </td>
+              <td className="text-muted-foreground px-6 py-4">
+                {student.currentCareerTermLabel ?? '—'}
+              </td>
+              <td className="text-muted-foreground px-6 py-4">
+                {student.programLabel}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  )
+}
+
+function SortHeader({
+  label,
+  value,
+  search,
+  sort,
+  direction,
+}: {
+  label: string
+  value: StudentRosterSort
+  search?: string
+  sort: StudentRosterSort
+  direction: SortDirection
+}) {
+  const active = sort === value
+  const nextDirection = active && direction === 'asc' ? 'desc' : 'asc'
+  const params = new URLSearchParams({ sort: value, direction: nextDirection })
+  if (search) params.set('q', search)
+
+  return (
+    <th
+      scope="col"
+      aria-sort={
+        active ? (direction === 'asc' ? 'ascending' : 'descending') : undefined
+      }
+      className="px-6 py-3 font-medium whitespace-nowrap"
+    >
+      <Link
+        href={`/students?${params.toString()}`}
+        className="hover:text-foreground inline-flex items-center gap-1.5"
+      >
+        {label}
+        {active ? (
+          <span aria-hidden="true">{direction === 'asc' ? '↑' : '↓'}</span>
+        ) : null}
+      </Link>
+    </th>
   )
 }

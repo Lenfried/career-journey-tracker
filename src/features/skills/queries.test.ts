@@ -123,19 +123,21 @@ describe('getStudentSkills', () => {
     expect(view.skills.every((s) => s.matchesRequirement)).toBe(true)
   })
 
-  it('raises the bar for a student on a track', async () => {
+  it('raises the bar for a student in a specialization', async () => {
     const view = await getStudentSkills('stu_al_rashid_zainab')
 
-    // Her track asks for things her own requirement list never mentioned, and
+    // Her specialization asks for things her own requirement list never mentioned, and
     // that is the point — the gap is against the path, not against a list an
     // advisor wrote once when the goal was set.
-    expect(view.requiredSkills.some((s) => s.source === 'track')).toBe(true)
+    expect(view.requiredSkills.some((s) => s.source === 'specialization')).toBe(
+      true,
+    )
     expect(view.gap).not.toHaveLength(0)
-    expect(view.gap.every((s) => s.source === 'track')).toBe(true)
+    expect(view.gap.every((s) => s.source === 'specialization')).toBe(true)
   })
 
-  it('shows only the advisor\u2019s own requirements when there is no track', async () => {
-    // Farrah wants security work and no security track exists yet.
+  it('shows only the advisor\u2019s own requirements without a specialization', async () => {
+    // Farrah wants security work and no security specialization exists yet.
     const view = await getStudentSkills('stu_benhamou_farrah')
     expect(view.requiredSkills).not.toHaveLength(0)
     expect(view.requiredSkills.every((s) => s.source === 'student')).toBe(true)
@@ -149,7 +151,7 @@ describe('getStudentSkills', () => {
 })
 
 describe('mergeRequiredSkills', () => {
-  it('takes the track\u2019s requirements and the advisor\u2019s together', () => {
+  it('takes the specialization requirements and the advisor\u2019s together', () => {
     const merged = mergeRequiredSkills(
       [required('Probability'), required('C++')],
       [required('Public speaking')],
@@ -160,17 +162,20 @@ describe('mergeRequiredSkills', () => {
       'Probability',
       'Public speaking',
     ])
-    expect(merged.find((s) => s.name === 'C++')?.source).toBe('track')
+    expect(merged.find((s) => s.name === 'C++')?.source).toBe('specialization')
     expect(merged.find((s) => s.name === 'Public speaking')?.source).toBe(
       'student',
     )
   })
 
   it('de-duplicates on the same rule the gap uses, advisor wins', () => {
-    const fromTrack = { ...required('Python'), rationale: 'Track says so.' }
+    const fromSpecialization = {
+      ...required('Python'),
+      rationale: 'Specialization says so.',
+    }
     const fromStudent = { ...required(' python '), rationale: 'For her lab.' }
 
-    const merged = mergeRequiredSkills([fromTrack], [fromStudent])
+    const merged = mergeRequiredSkills([fromSpecialization], [fromStudent])
 
     // One requirement, not two near-identical rows an advisor has to reconcile.
     expect(merged).toHaveLength(1)
@@ -178,14 +183,14 @@ describe('mergeRequiredSkills', () => {
     expect(merged[0].source).toBe('student')
   })
 
-  it('handles a student with no track, and a track with no extras', () => {
+  it('handles either source having no requirements', () => {
     expect(mergeRequiredSkills([], [required('SQL')])).toHaveLength(1)
     expect(mergeRequiredSkills([required('SQL')], [])).toHaveLength(1)
     expect(mergeRequiredSkills([], [])).toHaveLength(0)
   })
 })
 
-describe('changing track', () => {
+describe('changing specialization', () => {
   const held_skills = [held('Python'), held('Git')]
 
   const swe = [required('Data Structures & Algorithms'), required('SQL')]
@@ -227,7 +232,7 @@ describe('changing track', () => {
 
     expect(
       result.requiredSkills.find((s) => s.name === 'C++')?.sourceLabel,
-    ).toBe('Required by the Quantitative finance track')
+    ).toBe('Required by the Quantitative finance specialization')
     expect(
       result.requiredSkills.find((s) => s.name === 'Public speaking')
         ?.sourceLabel,

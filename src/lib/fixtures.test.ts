@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { ARTIFACT_STATUSES, CAREER_MAP_TERMS } from './canonical'
+import {
+  ARTIFACT_STATUSES,
+  CAREER_MAP_TERMS,
+  canonicalDatasetSchema,
+  studentCareerMapSchema,
+} from './canonical'
 import {
   loadCareerActions,
+  loadCareerSpecializations,
   loadCareerTracks,
   loadDataset,
   loadLookups,
@@ -185,6 +191,7 @@ describe('required scenario coverage', () => {
 describe('career map template', () => {
   const actions = loadCareerActions()
   const tracks = loadCareerTracks()
+  const specializations = loadCareerSpecializations()
   const [general] = loadDataset().careerMaps
   const actionIds = new Set(actions.map((action) => action.id))
 
@@ -222,36 +229,73 @@ describe('career map template', () => {
     }
   })
 
-  it('only lets a track add, move or exclude catalog actions', () => {
+  it('puts every specialization under a configured broad track', () => {
+    const trackIds = new Set(tracks.map((track) => track.id))
+    for (const specialization of specializations) {
+      expect(trackIds).toContain(specialization.trackId)
+    }
+  })
+
+  it('requires a specialization selection to include its parent track', () => {
+    const result = studentCareerMapSchema.safeParse({
+      trackId: null,
+      trackSetAt: null,
+      specializationId: 'specialization_backend_engineering',
+      specializationSetAt: '2026-09-16T14:00:00.000Z',
+      progress: [],
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects a student whose specialization belongs to another track', () => {
+    const dataset = structuredClone(loadDataset())
+    const student = dataset.students.find(
+      (item) => item.careerMap.specializationId !== null,
+    )
+    expect(student).toBeDefined()
+    if (!student) return
+
+    student.careerMap.trackId =
+      student.careerMap.trackId === 'track_data_ai'
+        ? 'track_software_engineering'
+        : 'track_data_ai'
+
+    expect(canonicalDatasetSchema.safeParse(dataset).success).toBe(false)
+  })
+
+  it('only lets a specialization add, move or exclude catalog actions', () => {
     const placedByGeneral = new Set(
       general.placements.map((placement) => placement.actionId),
     )
 
-    for (const track of tracks) {
-      for (const placement of track.placements) {
+    for (const specialization of specializations) {
+      for (const placement of specialization.placements) {
         expect(actionIds).toContain(placement.actionId)
       }
       // Excluding something the general map never placed is a typo, not an edit.
-      for (const excluded of track.excludes) {
+      for (const excluded of specialization.excludes) {
         expect(placedByGeneral).toContain(excluded)
       }
     }
   })
 
-  it('gives every track the skills its path requires', () => {
-    // A track with no required skills silently turns the skills gap back into
-    // whatever an advisor typed once, which is the behaviour tracks replaced.
-    for (const track of tracks) {
-      expect(track.requiredSkills).not.toHaveLength(0)
-      const ids = track.requiredSkills.map((skill) => skill.id)
+  it('gives every specialization the skills its path requires', () => {
+    // A specialization with no required skills silently turns the skills gap
+    // back into whatever an advisor typed once.
+    for (const specialization of specializations) {
+      expect(specialization.requiredSkills).not.toHaveLength(0)
+      const ids = specialization.requiredSkills.map((skill) => skill.id)
       expect(new Set(ids).size).toBe(ids.length)
     }
   })
 
-  it('leaves no action stranded outside every map and track', () => {
+  it('leaves no action stranded outside every map and specialization', () => {
     const placed = new Set(general.placements.map((p) => p.actionId))
-    for (const track of tracks) {
-      for (const placement of track.placements) placed.add(placement.actionId)
+    for (const specialization of specializations) {
+      for (const placement of specialization.placements) {
+        placed.add(placement.actionId)
+      }
     }
 
     // An action in the catalog that nothing recommends is invisible in the UI
@@ -295,6 +339,16 @@ describe('career map scenario coverage', () => {
     for (const track of loadCareerTracks()) {
       expect(
         students.filter((s) => s.careerMap?.trackId === track.id),
+      ).not.toHaveLength(0)
+    }
+  })
+
+  it('covers every specialization', () => {
+    for (const specialization of loadCareerSpecializations()) {
+      expect(
+        students.filter(
+          (student) => student.careerMap.specializationId === specialization.id,
+        ),
       ).not.toHaveLength(0)
     }
   })
@@ -361,14 +415,16 @@ describe('career map scenario coverage', () => {
     expect(reasons.size).toBeGreaterThan(1)
   })
 
-  it('covers work recorded under a track the student has since left', () => {
-    // The previous-track section only renders when a student has a progress row
-    // for an action their current track does not include. Lose this fixture and
+  it('covers work recorded under a specialization the student has since left', () => {
+    // The previous-specialization section renders when a student has progress
+    // for an action their current specialization does not include. Lose this fixture and
     // that whole path stops being exercised.
-    const trackPlacements = new Map(
-      loadCareerTracks().map((track) => [
-        track.id,
-        new Set(track.placements.map((p) => p.actionId)),
+    const specializationPlacements = new Map(
+      loadCareerSpecializations().map((specialization) => [
+        specialization.id,
+        new Set(
+          specialization.placements.map((placement) => placement.actionId),
+        ),
       ]),
     )
     const [general] = loadDataset().careerMaps
@@ -376,14 +432,17 @@ describe('career map scenario coverage', () => {
 
     const withStaleWork = students.filter((student) => {
       const map = student.careerMap
-      if (!map.trackId) return false
-      const track = trackPlacements.get(map.trackId) ?? new Set()
+      if (!map.specializationId) return false
+      const specialization =
+        specializationPlacements.get(map.specializationId) ?? new Set()
       const excluded = new Set(
-        loadCareerTracks().find((t) => t.id === map.trackId)?.excludes ?? [],
+        loadCareerSpecializations().find(
+          (item) => item.id === map.specializationId,
+        )?.excludes ?? [],
       )
       return map.progress.some(
         (row) =>
-          !track.has(row.actionId) &&
+          !specialization.has(row.actionId) &&
           (!generalIds.has(row.actionId) || excluded.has(row.actionId)),
       )
     })

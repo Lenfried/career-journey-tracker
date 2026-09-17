@@ -1,8 +1,8 @@
 // career-map — admin
 //
 // Pure mutation logic for the department's template: the action catalog, the
-// general map, and the tracks layered over it. No filesystem access here —
-// `actions.ts` is the thin Server Action wrapper that reads the current
+// general map, and the specializations layered over it. No filesystem access
+// here — `actions.ts` is the thin Server Action wrapper that reads the current
 // dataset through `lib/fixtures`, calls into this file, and writes the result
 // back with `saveDataset()`. Keeping the actual edits here, taking a slice of
 // the dataset and returning a new one, is what makes them testable without
@@ -13,7 +13,7 @@
 // Phase 2. This is a deliberate, discussed exception, not an oversight: the
 // app already cannot be deployed anywhere a real student record could reach
 // it (see AGENTS.md), and this module writes only to the shared template
-// (catalog/map/tracks), never to a student record. It still needs wrapping
+// (catalog/map/specializations), never to a student record. It still needs wrapping
 // the moment auth exists.
 
 import type {
@@ -21,7 +21,7 @@ import type {
   CareerActionPlacement,
   CareerMap,
   CareerMapTerm,
-  CareerTrack,
+  CareerSpecialization,
   Importance,
   RequiredSkill,
   SkillCategory,
@@ -111,7 +111,7 @@ export function deleteCareerAction(
 export function describeActionUsage(
   actionId: string,
   map: CareerMap,
-  tracks: CareerTrack[],
+  specializations: CareerSpecialization[],
   students: StudentRecord[],
 ): string | null {
   const reasons: string[] = []
@@ -120,15 +120,15 @@ export function describeActionUsage(
     reasons.push('placed on the general map')
   }
 
-  const trackLabels = tracks
+  const specializationLabels = specializations
     .filter(
-      (track) =>
-        track.placements.some((p) => p.actionId === actionId) ||
-        track.excludes.includes(actionId),
+      (specialization) =>
+        specialization.placements.some((p) => p.actionId === actionId) ||
+        specialization.excludes.includes(actionId),
     )
-    .map((track) => track.label)
-  if (trackLabels.length > 0) {
-    reasons.push(`referenced by ${trackLabels.join(', ')}`)
+    .map((specialization) => specialization.label)
+  if (specializationLabels.length > 0) {
+    reasons.push(`referenced by ${specializationLabels.join(', ')}`)
   }
 
   const studentCount = students.filter((student) =>
@@ -180,78 +180,81 @@ export function applyMapPlacements(
 }
 
 /* -------------------------------------------------------------------------- */
-/* Tracks                                                                      */
+/* Specializations                                                             */
 /* -------------------------------------------------------------------------- */
 
-export type CareerTrackInput = {
+export type CareerSpecializationInput = {
+  trackId: string
   label: string
   description: string
 }
 
-export function createCareerTrack(
-  tracks: CareerTrack[],
-  input: CareerTrackInput,
-): CareerTrack[] {
+export function createCareerSpecialization(
+  specializations: CareerSpecialization[],
+  input: CareerSpecializationInput,
+): CareerSpecialization[] {
   const id = slugify(
-    'track_',
+    'specialization_',
     input.label,
-    tracks.map((t) => t.id),
+    specializations.map((item) => item.id),
   )
   return [
-    ...tracks,
+    ...specializations,
     { id, ...input, placements: [], excludes: [], requiredSkills: [] },
   ]
 }
 
-export function updateCareerTrackDetails(
-  tracks: CareerTrack[],
+export function updateCareerSpecializationDetails(
+  specializations: CareerSpecialization[],
   id: string,
-  input: CareerTrackInput,
-): CareerTrack[] {
-  return tracks.map((track) =>
-    track.id === id ? { ...track, ...input } : track,
+  input: CareerSpecializationInput,
+): CareerSpecialization[] {
+  return specializations.map((specialization) =>
+    specialization.id === id ? { ...specialization, ...input } : specialization,
   )
 }
 
-export function deleteCareerTrack(
-  tracks: CareerTrack[],
+export function deleteCareerSpecialization(
+  specializations: CareerSpecialization[],
   id: string,
-): CareerTrack[] {
-  return tracks.filter((track) => track.id !== id)
+): CareerSpecialization[] {
+  return specializations.filter((specialization) => specialization.id !== id)
 }
 
-/** Why a track can't be deleted, or `null` when it safely can be. */
-export function describeTrackUsage(
-  trackId: string,
+/** Why a specialization can't be deleted, or `null` when it safely can be. */
+export function describeSpecializationUsage(
+  specializationId: string,
   students: StudentRecord[],
 ): string | null {
   const count = students.filter(
-    (student) => student.careerMap.trackId === trackId,
+    (student) => student.careerMap.specializationId === specializationId,
   ).length
   if (count === 0) return null
-  return `${count} student${count === 1 ? ' is' : 's are'} currently on this track`
+  return `${count} student${count === 1 ? ' is' : 's are'} currently on this specialization`
 }
 
-/** One catalog action's status inside a single track's overlay. */
-export type TrackOverride = CareerMapTerm | 'excluded' | 'default'
+/** One catalog action's status inside a specialization overlay. */
+export type SpecializationOverride = CareerMapTerm | 'excluded' | 'default'
 
-export function replaceTrack(
-  tracks: CareerTrack[],
-  updated: CareerTrack,
-): CareerTrack[] {
-  return tracks.map((track) => (track.id === updated.id ? updated : track))
+export function replaceSpecialization(
+  specializations: CareerSpecialization[],
+  updated: CareerSpecialization,
+): CareerSpecialization[] {
+  return specializations.map((specialization) =>
+    specialization.id === updated.id ? updated : specialization,
+  )
 }
 
 /**
- * Rebuilds a track's `placements` and `excludes` from a full overlay submitted
- * by the admin form — one `TrackOverride` per catalog action, `'default'`
+ * Rebuilds a specialization's overlay from the full admin form — one
+ * `SpecializationOverride` per catalog action, `'default'`
  * meaning "same as the general map". Like `applyMapPlacements`, this replaces
  * both arrays outright because the form is exhaustive over the catalog.
  */
-export function applyTrackOverlay(
-  track: CareerTrack,
-  overrides: Map<string, TrackOverride>,
-): CareerTrack {
+export function applySpecializationOverlay(
+  specialization: CareerSpecialization,
+  overrides: Map<string, SpecializationOverride>,
+): CareerSpecialization {
   const placements: CareerActionPlacement[] = []
   const excludes: string[] = []
 
@@ -260,11 +263,11 @@ export function applyTrackOverlay(
     else if (value !== 'default') placements.push({ actionId, term: value })
   }
 
-  return { ...track, placements, excludes }
+  return { ...specialization, placements, excludes }
 }
 
 /* -------------------------------------------------------------------------- */
-/* Required skills, per track                                                  */
+/* Required skills, per specialization                                         */
 /* -------------------------------------------------------------------------- */
 
 export type RequiredSkillInput = {
@@ -275,24 +278,29 @@ export type RequiredSkillInput = {
 }
 
 export function addRequiredSkill(
-  track: CareerTrack,
+  specialization: CareerSpecialization,
   input: RequiredSkillInput,
-): CareerTrack {
+): CareerSpecialization {
   const id = slugify(
     'skill_',
     input.name,
-    track.requiredSkills.map((s) => s.id),
+    specialization.requiredSkills.map((s) => s.id),
   )
   const skill: RequiredSkill = { id, ...input }
-  return { ...track, requiredSkills: [...track.requiredSkills, skill] }
+  return {
+    ...specialization,
+    requiredSkills: [...specialization.requiredSkills, skill],
+  }
 }
 
 export function removeRequiredSkill(
-  track: CareerTrack,
+  specialization: CareerSpecialization,
   skillId: string,
-): CareerTrack {
+): CareerSpecialization {
   return {
-    ...track,
-    requiredSkills: track.requiredSkills.filter((s) => s.id !== skillId),
+    ...specialization,
+    requiredSkills: specialization.requiredSkills.filter(
+      (skill) => skill.id !== skillId,
+    ),
   }
 }

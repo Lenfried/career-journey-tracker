@@ -13,6 +13,7 @@ import {
   type CareerActionStatus,
   type CareerMap,
   type CareerMapTerm,
+  type CareerSpecialization,
   type CareerTrack,
   type Classification,
   type EnrollmentStatus,
@@ -25,6 +26,8 @@ import { formatCalendarDate, formatTimestamp, todayOnCampus } from '@/lib/dates'
 import {
   loadCareerActions,
   loadCareerMaps,
+  loadCareerSpecialization,
+  loadCareerSpecializations,
   loadCareerTrack,
   loadCareerTracks,
   loadLookups,
@@ -48,7 +51,7 @@ import type {
   CareerMapTermView,
   CareerMapView,
   CareerTrackOption,
-  PreviousTrackActionView,
+  PreviousSpecializationActionView,
 } from './types'
 
 /**
@@ -105,11 +108,16 @@ function buildCareerMapView(student: StudentRecord): CareerMapView | null {
 
   const catalog = loadCareerActions()
   const lookups = loadLookups()
+  const specialization = loadCareerSpecialization(
+    student.careerMap.specializationId,
+  )
 
   return deriveCareerMapView({
     map,
     track: loadCareerTrack(student.careerMap.trackId) ?? null,
+    specialization: specialization ?? null,
     tracks: loadCareerTracks(),
+    specializations: loadCareerSpecializations(),
     catalog,
     assignment: student.careerMap,
     evidence: collectEvidence(student, catalog, lookups),
@@ -122,6 +130,8 @@ function buildCareerMapView(student: StudentRecord): CareerMapView | null {
 const NO_MAP: CareerMapStatus = {
   state: 'none',
   trackLabel: null,
+  specializationLabel: null,
+  currentTerm: null,
   currentTermLabel: null,
   doneCount: 0,
   applicableCount: 0,
@@ -136,6 +146,8 @@ function toStatus(view: CareerMapView | null): CareerMapStatus {
   return {
     state: view.position.state,
     trackLabel: view.trackLabel,
+    specializationLabel: view.specializationLabel,
+    currentTerm: view.position.currentTerm,
     currentTermLabel: view.position.currentTermLabel,
     doneCount: view.doneCount,
     applicableCount: view.applicableCount,
@@ -269,35 +281,41 @@ function mapState(status: EnrollmentStatus): CareerMapPosition['state'] {
 export type MergedPlacement = {
   actionId: string
   term: CareerMapTerm
-  /** The track put it here — either by adding it, or by moving it. */
-  fromTrack: boolean
+  /** The specialization put it here — either by adding it, or by moving it. */
+  fromSpecialization: boolean
 }
 
 /**
- * The general map with a track layered over it.
+ * The general map with a specialization layered over it.
  *
- * Three operations, in this order: the track's excludes drop base placements,
- * then its own placements either move an action the base map already places or
- * add one the base map does not. A track can never change what an action says —
- * that lives once in the catalog, so a wording fix reaches every track at the
- * same time, and so progress survives a student changing track.
+ * Three operations, in this order: the specialization's excludes drop base
+ * placements, then its own placements either move an action the base map
+ * already places or add one the base map does not. A specialization can never
+ * change what an action says — that lives once in the catalog, so a wording fix
+ * reaches every path at the same time and progress survives a path change.
  */
 export function mergePlacements(
   map: CareerMap,
-  track: CareerTrack | null,
+  specialization: CareerSpecialization | null,
 ): MergedPlacement[] {
   const merged = new Map<string, MergedPlacement>()
 
   for (const placement of map.placements) {
-    merged.set(placement.actionId, { ...placement, fromTrack: false })
+    merged.set(placement.actionId, {
+      ...placement,
+      fromSpecialization: false,
+    })
   }
 
-  if (track) {
-    for (const actionId of track.excludes) {
+  if (specialization) {
+    for (const actionId of specialization.excludes) {
       merged.delete(actionId)
     }
-    for (const placement of track.placements) {
-      merged.set(placement.actionId, { ...placement, fromTrack: true })
+    for (const placement of specialization.placements) {
+      merged.set(placement.actionId, {
+        ...placement,
+        fromSpecialization: true,
+      })
     }
   }
 
@@ -382,7 +400,9 @@ export function collectEvidence(
 export type CareerMapViewInput = {
   map: CareerMap
   track: CareerTrack | null
+  specialization: CareerSpecialization | null
   tracks: CareerTrack[]
+  specializations: CareerSpecialization[]
   catalog: CareerAction[]
   assignment: StudentCareerMap
   evidence: Map<string, EvidenceSummary>
@@ -400,7 +420,9 @@ export type CareerMapViewInput = {
 export function deriveCareerMapView({
   map,
   track,
+  specialization,
   tracks,
+  specializations,
   catalog,
   assignment,
   evidence,
@@ -416,7 +438,7 @@ export function deriveCareerMapView({
     assignment.progress.map((row) => [row.actionId, row]),
   )
 
-  const placements = mergePlacements(map, track)
+  const placements = mergePlacements(map, specialization)
   const { startedIndex } = position
 
   const views = placements
@@ -478,7 +500,15 @@ export function deriveCareerMapView({
     trackId: track?.id ?? null,
     trackLabel: track?.label ?? null,
     trackDescription: track?.description ?? null,
-    availableTracks: toTrackOptions(tracks, track),
+    specializationId: specialization?.id ?? null,
+    specializationLabel: specialization?.label ?? null,
+    specializationDescription: specialization?.description ?? null,
+    availableTracks: toTrackOptions(
+      tracks,
+      specializations,
+      track,
+      specialization,
+    ),
     position,
     terms,
     doneCount: done.length,
@@ -497,7 +527,7 @@ export function deriveCareerMapView({
       : [],
     overdueActions: views.filter((view) => view.overdue),
     carriedActions: views.filter((view) => view.carriedOver),
-    previousTrackWork: toPreviousTrackWork(
+    previousSpecializationWork: toPreviousSpecializationWork(
       assignment.progress,
       placed,
       actionsById,
@@ -564,7 +594,7 @@ function toActionView({
     completedCount: progress?.completedCount ?? 0,
     targetCount: action.targetCount,
     resourceUrl: action.resourceUrl,
-    fromTrack: placement.fromTrack,
+    fromSpecialization: placement.fromSpecialization,
     markedBy: progress?.markedBy ?? null,
     markedAtLabel: progress ? formatTimestamp(progress.markedAt) : null,
     note: progress?.note ?? null,
@@ -620,28 +650,38 @@ function termTiming(
 
 function toTrackOptions(
   tracks: CareerTrack[],
-  current: CareerTrack | null,
+  specializations: CareerSpecialization[],
+  currentTrack: CareerTrack | null,
+  currentSpecialization: CareerSpecialization | null,
 ): CareerTrackOption[] {
   return tracks.map((track) => ({
     id: track.id,
     label: track.label,
     description: track.description,
-    current: track.id === current?.id,
+    current: track.id === currentTrack?.id,
+    specializations: specializations
+      .filter((specialization) => specialization.trackId === track.id)
+      .map((specialization) => ({
+        id: specialization.id,
+        label: specialization.label,
+        description: specialization.description,
+        current: specialization.id === currentSpecialization?.id,
+      })),
   }))
 }
 
 /**
- * Progress rows for actions the current track does not include.
+ * Progress rows for actions the current specialization does not include.
  *
- * Almost always a track change. The rows are kept rather than deleted, so the
+ * Almost always a path change. The rows are kept rather than deleted, so the
  * screen can say "you did this" instead of quietly losing a year of work the
- * first time a student decides research is not for them.
+ * first time a student changes direction.
  */
-function toPreviousTrackWork(
+function toPreviousSpecializationWork(
   progress: CareerActionProgress[],
   placed: Set<string>,
   actionsById: Map<string, CareerAction>,
-): PreviousTrackActionView[] {
+): PreviousSpecializationActionView[] {
   return progress.flatMap((row) => {
     if (placed.has(row.actionId)) return []
 
@@ -670,6 +710,7 @@ export async function getCareerMapTemplate(): Promise<{
   map: CareerMap
   catalog: CareerAction[]
   tracks: CareerTrack[]
+  specializations: CareerSpecialization[]
   categories: LookupItem[]
   students: StudentRecord[]
 }> {
@@ -680,22 +721,29 @@ export async function getCareerMapTemplate(): Promise<{
     map,
     catalog: loadCareerActions(),
     tracks: loadCareerTracks(),
+    specializations: loadCareerSpecializations(),
     categories: loadLookups().actionCategories,
     students: loadStudents(),
   }
 }
 
-/** Everything one track's overlay editor needs, or `null` for an unknown id. */
-export async function getCareerTrackTemplate(trackId: string): Promise<{
+/** Everything one specialization editor needs, or `null` for an unknown id. */
+export async function getCareerSpecializationTemplate(
+  specializationId: string,
+): Promise<{
+  specialization: CareerSpecialization
   track: CareerTrack
   catalog: CareerAction[]
   categories: LookupItem[]
   students: StudentRecord[]
 } | null> {
-  const track = loadCareerTrack(trackId)
+  const specialization = loadCareerSpecialization(specializationId)
+  if (!specialization) return null
+  const track = loadCareerTrack(specialization.trackId)
   if (!track) return null
 
   return {
+    specialization,
     track,
     catalog: loadCareerActions(),
     categories: loadLookups().actionCategories,

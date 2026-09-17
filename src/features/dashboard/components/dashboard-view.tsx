@@ -88,7 +88,9 @@ export function DashboardView({ summary }: { summary: DashboardSummary }) {
                 >
                   <span className="font-medium">{student.displayName}</span>
                   <span className="text-muted-foreground text-sm">
-                    {status.trackLabel ?? 'General career map'}
+                    {status.specializationLabel ??
+                      status.trackLabel ??
+                      'Exploring options'}
                     {status.currentTermLabel
                       ? ` · ${status.currentTermLabel}`
                       : ''}

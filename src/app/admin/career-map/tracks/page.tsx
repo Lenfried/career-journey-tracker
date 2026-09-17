@@ -13,7 +13,7 @@ export default async function TracksAdminPage({
   searchParams: SearchParams
 }) {
   const { error } = await searchParams
-  const { tracks, students } = await getCareerMapTemplate()
+  const { tracks, specializations, students } = await getCareerMapTemplate()
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-10">
@@ -22,15 +22,19 @@ export default async function TracksAdminPage({
           Career map admin
         </h1>
         <p className="text-muted-foreground mt-1">
-          Edit the shared action catalog, the general map, and tracks. Every
-          student reads from this.
+          Edit the shared action catalog, general map, tracks, and
+          specializations. Every student reads from this.
         </p>
       </header>
 
       <AdminNav active="tracks" />
       <AdminErrorBanner message={error} />
 
-      <TracksAdmin tracks={tracks} students={students} />
+      <TracksAdmin
+        tracks={tracks}
+        specializations={specializations}
+        students={students}
+      />
     </main>
   )
 }

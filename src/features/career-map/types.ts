@@ -73,8 +73,8 @@ export type CareerActionView = {
   completedCount: number
   targetCount: number
   resourceUrl: string | null
-  /** True when the student's track placed or moved this action. */
-  fromTrack: boolean
+  /** True when the student's specialization placed or moved this action. */
+  fromSpecialization: boolean
   /** Who confirmed it, and when. `null` while nobody has touched the action. */
   markedBy: string | null
   markedAtLabel: string | null
@@ -108,14 +108,14 @@ export type CareerMapTermView = {
 }
 
 /**
- * Work recorded against an action the student's current track does not include
- * — almost always because they changed track.
+ * Work recorded against an action the current specialization does not include
+ * — almost always because the student changed paths.
  *
  * Kept rather than deleted. A sophomore who spent a year on research before
  * moving to industry did that work, and erasing it on switch punishes exactly
  * the exploration this tool exists to encourage.
  */
-export type PreviousTrackActionView = {
+export type PreviousSpecializationActionView = {
   actionId: string
   title: string
   status: CareerActionStatus
@@ -124,22 +124,32 @@ export type PreviousTrackActionView = {
   note: string | null
 }
 
-/** A track a student could be moved to. */
+/** A specialization nested beneath a broad career track. */
+export type CareerSpecializationOption = {
+  id: string
+  label: string
+  description: string
+  current: boolean
+}
+
+/** A broad track and the specializations configured beneath it. */
 export type CareerTrackOption = {
   id: string
   label: string
   description: string
   /** True for the track the student is on. */
   current: boolean
+  specializations: CareerSpecializationOption[]
 }
 
 /**
  * Everything the career map screen renders.
  *
  * Flat and fully label-resolved on purpose: nothing downstream has to re-join a
- * lookup table, and the whole structure is safe to serialise — there is no name,
- * email or EMPLID anywhere in it, only ids and labels. That matters for the
- * summarisation work: this is the shape you would hand a model, unchanged.
+ * lookup table. It omits direct student identity fields, but it is not an
+ * AI-safe DTO: progress notes are free text and can contain identifying or
+ * sensitive context. Any model integration must make a narrower projection and
+ * follow the FERPA and York LiteLLM rules in AGENTS.md.
  */
 export type CareerMapView = {
   mapId: string
@@ -150,6 +160,9 @@ export type CareerMapView = {
   trackId: string | null
   trackLabel: string | null
   trackDescription: string | null
+  specializationId: string | null
+  specializationLabel: string | null
+  specializationDescription: string | null
   availableTracks: CareerTrackOption[]
   position: CareerMapPosition
   terms: CareerMapTermView[]
@@ -167,7 +180,7 @@ export type CareerMapView = {
   overdueActions: CareerActionView[]
   /** Everything an advisor has moved, wherever it landed. */
   carriedActions: CareerActionView[]
-  previousTrackWork: PreviousTrackActionView[]
+  previousSpecializationWork: PreviousSpecializationActionView[]
 }
 
 /**
@@ -182,6 +195,8 @@ export type CareerMapStatus = {
   /** `none` when there is no map to show — an unknown student, or no map published. */
   state: CareerMapPosition['state'] | 'none'
   trackLabel: string | null
+  specializationLabel: string | null
+  currentTerm: CareerMapTerm | null
   currentTermLabel: string | null
   doneCount: number
   applicableCount: number

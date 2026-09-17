@@ -4,6 +4,7 @@ import {
   SKILL_CATEGORIES,
   type CareerAction,
   type CareerMap,
+  type CareerSpecialization,
   type CareerTrack,
 } from '@/lib/canonical'
 import { CAREER_MAP_TERM_LABELS } from '@/lib/labels'
@@ -11,8 +12,8 @@ import { IMPORTANCE_LABELS, SKILL_CATEGORY_LABELS } from '@/lib/labels'
 import {
   addRequiredSkillAction,
   removeRequiredSkillAction,
-  updateCareerTrackDetailsAction,
-  updateTrackOverlayAction,
+  updateCareerSpecializationDetailsAction,
+  updateSpecializationOverlayAction,
 } from '../../actions'
 import {
   Field,
@@ -21,14 +22,16 @@ import {
   SECONDARY_BUTTON_CLASS,
 } from './form-field'
 
-export function TrackEditorAdmin({
-  track,
+export function SpecializationEditorAdmin({
+  tracks,
+  specialization,
   generalMap,
   catalog,
   categoryLabel,
   studentCount,
 }: {
-  track: CareerTrack
+  tracks: CareerTrack[]
+  specialization: CareerSpecialization
   generalMap: CareerMap
   catalog: CareerAction[]
   categoryLabel: Map<string, string>
@@ -40,16 +43,46 @@ export function TrackEditorAdmin({
         <h2 className="mb-3 text-lg font-semibold tracking-tight">Details</h2>
         <p className="text-muted-foreground mb-4 text-sm">
           {studentCount} student{studentCount === 1 ? ' is' : 's are'} currently
-          on this track.
+          in this specialization.
         </p>
         <form
-          action={updateCareerTrackDetailsAction.bind(null, track.id)}
+          action={updateCareerSpecializationDetailsAction.bind(
+            null,
+            specialization.id,
+          )}
           className="max-w-xl space-y-4 rounded-lg border p-4"
         >
+          <Field label="Track">
+            {studentCount > 0 ? (
+              <input
+                type="hidden"
+                name="trackId"
+                value={specialization.trackId}
+              />
+            ) : null}
+            <select
+              name={studentCount > 0 ? undefined : 'trackId'}
+              defaultValue={specialization.trackId}
+              disabled={studentCount > 0}
+              required
+              className={FIELD_CLASS}
+            >
+              {tracks.map((track) => (
+                <option key={track.id} value={track.id}>
+                  {track.label}
+                </option>
+              ))}
+            </select>
+            {studentCount > 0 ? (
+              <span className="text-muted-foreground block text-xs">
+                Move assigned students before changing the parent track.
+              </span>
+            ) : null}
+          </Field>
           <Field label="Label">
             <input
               name="label"
-              defaultValue={track.label}
+              defaultValue={specialization.label}
               required
               className={FIELD_CLASS}
             />
@@ -57,7 +90,7 @@ export function TrackEditorAdmin({
           <Field label="Description">
             <textarea
               name="description"
-              defaultValue={track.description}
+              defaultValue={specialization.description}
               required
               rows={2}
               className={FIELD_CLASS}
@@ -73,17 +106,22 @@ export function TrackEditorAdmin({
         <h2 className="mb-1 text-lg font-semibold tracking-tight">Overlay</h2>
         <p className="text-muted-foreground mb-4 text-sm">
           Every action starts at its general-map term. Move one into a different
-          term for this track, or exclude it — the catalog entry itself only
-          changes on the Action catalog page.
+          term for this specialization, or exclude it — the catalog entry itself
+          only changes on the Action catalog page.
         </p>
 
-        <form action={updateTrackOverlayAction.bind(null, track.id)}>
+        <form
+          action={updateSpecializationOverlayAction.bind(
+            null,
+            specialization.id,
+          )}
+        >
           <ul className="divide-y overflow-hidden rounded-lg border">
             {catalog.map((action) => {
-              const placement = track.placements.find(
+              const placement = specialization.placements.find(
                 (p) => p.actionId === action.id,
               )
-              const excluded = track.excludes.includes(action.id)
+              const excluded = specialization.excludes.includes(action.id)
               const generalTerm = generalMap.placements.find(
                 (p) => p.actionId === action.id,
               )?.term
@@ -119,7 +157,9 @@ export function TrackEditorAdmin({
                         Move to: {CAREER_MAP_TERM_LABELS[term]}
                       </option>
                     ))}
-                    <option value="excluded">Excluded from this track</option>
+                    <option value="excluded">
+                      Excluded from this specialization
+                    </option>
                   </select>
                 </li>
               )
@@ -137,13 +177,13 @@ export function TrackEditorAdmin({
           Required skills
         </h2>
         <p className="text-muted-foreground mb-4 text-sm">
-          What this track asks a student to be able to do. Changes here follow a
-          student the moment they switch onto this track.
+          What this specialization asks a student to be able to do. Changes here
+          follow a student the moment they switch specializations.
         </p>
 
-        {track.requiredSkills.length > 0 ? (
+        {specialization.requiredSkills.length > 0 ? (
           <ul className="mb-4 divide-y overflow-hidden rounded-lg border">
-            {track.requiredSkills.map((skill) => (
+            {specialization.requiredSkills.map((skill) => (
               <li
                 key={skill.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3"
@@ -159,7 +199,7 @@ export function TrackEditorAdmin({
                 <form
                   action={removeRequiredSkillAction.bind(
                     null,
-                    track.id,
+                    specialization.id,
                     skill.id,
                   )}
                 >
@@ -176,7 +216,7 @@ export function TrackEditorAdmin({
         ) : null}
 
         <form
-          action={addRequiredSkillAction.bind(null, track.id)}
+          action={addRequiredSkillAction.bind(null, specialization.id)}
           className="max-w-xl space-y-4 rounded-lg border p-4"
         >
           <Field label="Skill name">

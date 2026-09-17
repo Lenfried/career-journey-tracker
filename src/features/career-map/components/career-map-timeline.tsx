@@ -67,17 +67,18 @@ export function CareerMapTimeline({ map }: { map: CareerMapView | null }) {
         </ol>
       </section>
 
-      {map.previousTrackWork.length > 0 ? (
+      {map.previousSpecializationWork.length > 0 ? (
         <section aria-labelledby="career-map-previous">
           <h3 id="career-map-previous" className="mb-1 font-medium">
-            Recorded under a previous track
+            Recorded under a previous specialization
           </h3>
           <p className="text-muted-foreground mb-3 text-sm">
-            These are not on {map.trackLabel ?? 'the current plan'} any more.
+            These are not on{' '}
+            {map.specializationLabel ?? 'the current specialization'} any more.
             The work still happened.
           </p>
           <ul className="divide-y overflow-hidden rounded-lg border">
-            {map.previousTrackWork.map((action) => (
+            {map.previousSpecializationWork.map((action) => (
               <li key={action.actionId} className="px-4 py-3">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="font-medium">{action.title}</span>

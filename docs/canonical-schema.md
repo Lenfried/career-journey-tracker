@@ -55,6 +55,7 @@ Those are not configuration.
 | `enrollmentStatus` | `enrolled` \| `leave-of-absence` \| `graduated` \| `withdrawn` |                                                                  |
 | `advisor`          | string \| null                                                 | Assigned advisor's name                                          |
 | `bio`              | string \| null                                                 | Free-text advisor context                                        |
+| `entryTerm`        | academic term (`YYYYFA`, `YYYYSP`, or `YYYYSU`)                | First term at York; anchors the start of this student's map      |
 | `updatedAt`        | timestamp                                                      | Drives the dashboard "recently updated" list                     |
 
 Likely to evolve: **low**. These are stable across any source.
@@ -76,6 +77,26 @@ common, expected state, not an error.
 
 Likely to evolve: **low**. Advisor-entered, source-independent.
 
+### 2b. Career-map assignment and progress
+
+The career map has a two-level taxonomy: a broad **track** and an optional,
+focused **specialization** beneath it. See
+[`career-map-taxonomy.md`](./career-map-taxonomy.md) for the full template
+contract, migration notes, and the AI-integration boundary.
+
+| Field                 | Type              | Notes                                                           |
+| --------------------- | ----------------- | --------------------------------------------------------------- |
+| `trackId`             | string \| null    | → top-level `careerTracks`; `null` means still exploring        |
+| `trackSetAt`          | timestamp \| null | Set exactly when `trackId` is set                               |
+| `specializationId`    | string \| null    | → `careerSpecializations`; must be a child of `trackId`         |
+| `specializationSetAt` | timestamp \| null | Set exactly when `specializationId` is set                      |
+| `progress`            | progress[]        | Sparse advisor-confirmed state, keyed only by stable `actionId` |
+
+A specialization requires a track, but a track does not require a
+specialization. This permits a student to choose a broad direction before
+committing to a narrower path. Progress never keys on either taxonomy level, so
+changing a path does not erase completed work.
+
 ### 3a. Skills — student has
 
 | Field               | Type                                                      | Notes                                                  |
@@ -87,7 +108,7 @@ Likely to evolve: **low**. Advisor-entered, source-independent.
 | `evidence`          | string \| null                                            | Where the skill came from — a course, a job, a project |
 | `verifiedByAdvisor` | boolean                                                   |                                                        |
 
-### 3b. Skills — role requires
+### 3b. Skills — path or advisor requires
 
 | Field        | Type                                         | Notes                        |
 | ------------ | -------------------------------------------- | ---------------------------- |
@@ -102,6 +123,10 @@ student has a skill whose _normalised_ name matches — trimmed and lowercased.
 Without that, `Python`, `python `, and `Python` from two different advisors are
 three different skills. Normalisation lives in `normaliseSkillName()` in
 `src/lib/canonical.ts` so read and write use the same rule.
+
+Specialization requirements and advisor-added student requirements are merged.
+When names normalize to the same value, the advisor-added row wins because it
+contains student-specific context. Broad tracks do not own required skills.
 
 Likely to evolve: **medium**. Names will need real normalisation work once a
 source pre-populates them.
@@ -174,4 +199,7 @@ lookups.artifactTypes   [{ id, label }]
    drifted.
 
 Schema changes are expected. Make them in version control, in one commit, with a
-note on what real-data observation prompted the change.
+note on what real-data observation prompted the change. During the current
+experimental/demo phase, a validated product-model decision can also prompt a
+change; document the migration and downstream integration impact in the same
+commit.

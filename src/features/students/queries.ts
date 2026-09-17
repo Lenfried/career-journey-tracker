@@ -8,11 +8,27 @@
 // becomes a Navigate360 ingest or a Postgres query, the bodies become awaited
 // and no caller changes.
 
-import { displayName, sortableName, type StudentRecord } from '@/lib/canonical'
+import {
+  CAREER_MAP_TERMS,
+  CLASSIFICATIONS,
+  displayName,
+  sortableName,
+  type StudentRecord,
+} from '@/lib/canonical'
 import { loadLookups, loadStudent, loadStudents } from '@/lib/fixtures'
 import { CLASSIFICATION_LABELS, ENROLLMENT_STATUS_LABELS } from '@/lib/labels'
 import { resolveLabel } from '@/lib/lookups'
-import type { StudentDetail, StudentFilters, StudentSummary } from './types'
+import { formatAcademicTerm, parseAcademicTerm } from '@/lib/terms'
+import { listCareerMapStatuses } from '@/features/career-map/queries'
+import type {
+  SortDirection,
+  StudentDetail,
+  StudentFilters,
+  StudentRosterFilters,
+  StudentRosterRow,
+  StudentRosterSort,
+  StudentSummary,
+} from './types'
 
 /**
  * The roster, ordered by surname.
@@ -31,6 +47,45 @@ export async function listStudents(
     .filter((student) => (needle ? matchesSearch(student, needle) : true))
     .map((student) => toSummary(student, lookups.programs))
     .sort((a, b) => a.sortableName.localeCompare(b.sortableName))
+}
+
+/**
+ * The roster screen's richer rows, sorted from URL-backed controls.
+ *
+ * `listStudents()` remains the small identity summary used by dashboard code.
+ * This composition adds career-map status only where the roster needs it and
+ * keeps every component away from the fixture data source.
+ */
+export async function listStudentRoster(
+  filters: StudentRosterFilters = {},
+): Promise<StudentRosterRow[]> {
+  const [students, statuses] = await Promise.all([
+    listStudents({ search: filters.search }),
+    listCareerMapStatuses(),
+  ])
+  const records = new Map(
+    loadStudents().map((student) => [student.id, student]),
+  )
+
+  const rows = students.flatMap((student) => {
+    const record = records.get(student.id)
+    if (!record) return []
+    const status = statuses.get(student.id)
+
+    return [
+      {
+        ...student,
+        entryTerm: record.entryTerm,
+        entryTermLabel: formatAcademicTerm(record.entryTerm),
+        trackLabel: status?.trackLabel ?? null,
+        specializationLabel: status?.specializationLabel ?? null,
+        currentCareerTerm: status?.currentTerm ?? null,
+        currentCareerTermLabel: status?.currentTermLabel ?? null,
+      },
+    ]
+  })
+
+  return sortRoster(rows, filters.sort ?? 'name', filters.direction ?? 'asc')
 }
 
 /** One student, or `null` when the id is unknown — callers render a 404. */
@@ -103,4 +158,81 @@ function toSummary(
     advisor: student.advisor,
     updatedAt: student.updatedAt,
   }
+}
+
+function sortRoster(
+  rows: StudentRosterRow[],
+  sort: StudentRosterSort,
+  direction: SortDirection,
+): StudentRosterRow[] {
+  const multiplier = direction === 'asc' ? 1 : -1
+
+  return rows.slice().sort((a, b) => {
+    const aMissing = isMissingSortValue(a, sort)
+    const bMissing = isMissingSortValue(b, sort)
+    if (aMissing !== bMissing) return aMissing ? 1 : -1
+
+    const primary = compareRosterValue(a, b, sort)
+    return primary === 0
+      ? a.sortableName.localeCompare(b.sortableName)
+      : primary * multiplier
+  })
+}
+
+function isMissingSortValue(
+  row: StudentRosterRow,
+  sort: StudentRosterSort,
+): boolean {
+  if (sort === 'track') return row.trackLabel === null
+  if (sort === 'specialization') return row.specializationLabel === null
+  if (sort === 'career-term') return row.currentCareerTerm === null
+  return false
+}
+
+function compareRosterValue(
+  a: StudentRosterRow,
+  b: StudentRosterRow,
+  sort: StudentRosterSort,
+): number {
+  switch (sort) {
+    case 'name':
+      return a.sortableName.localeCompare(b.sortableName)
+    case 'entry-term':
+      return academicTermRank(a.entryTerm) - academicTermRank(b.entryTerm)
+    case 'classification':
+      return (
+        CLASSIFICATIONS.indexOf(a.classification) -
+        CLASSIFICATIONS.indexOf(b.classification)
+      )
+    case 'track':
+      return compareNullableLabels(a.trackLabel, b.trackLabel)
+    case 'specialization':
+      return compareNullableLabels(a.specializationLabel, b.specializationLabel)
+    case 'career-term':
+      return compareNullableRanks(
+        a.currentCareerTerm === null
+          ? null
+          : CAREER_MAP_TERMS.indexOf(a.currentCareerTerm),
+        b.currentCareerTerm === null
+          ? null
+          : CAREER_MAP_TERMS.indexOf(b.currentCareerTerm),
+      )
+  }
+}
+
+function academicTermRank(code: string): number {
+  const term = parseAcademicTerm(code)
+  if (!term) return Number.MAX_SAFE_INTEGER
+  const seasonRank = { SP: 0, SU: 1, FA: 2 }[term.season]
+  return term.year * 3 + seasonRank
+}
+
+function compareNullableLabels(a: string | null, b: string | null): number {
+  if (a === null || b === null) return 0
+  return a.localeCompare(b)
+}
+
+function compareNullableRanks(a: number | null, b: number | null): number {
+  if (a === null || b === null) return 0
+  return a - b
 }

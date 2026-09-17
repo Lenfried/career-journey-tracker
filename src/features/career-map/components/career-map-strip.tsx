@@ -22,9 +22,7 @@ export function CareerMapStrip({
       className="bg-card hover:bg-muted/40 block rounded-lg border px-4 py-3"
     >
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="font-medium">
-          {status.trackLabel ?? 'General career map'}
-        </span>
+        <span className="font-medium">Career map</span>
         <span className="text-muted-foreground text-sm">
           {status.currentTermLabel ??
             (status.state === 'paused' ? 'On leave' : 'Plan complete')}
@@ -35,7 +33,15 @@ export function CareerMapStrip({
         </span>
       </div>
 
-      <p className="mt-1 text-sm">
+      <p className="text-muted-foreground mt-1 text-sm">
+        <span>Track: {status.trackLabel ?? 'Exploring options'}</span>
+        <span aria-hidden="true"> · </span>
+        <span>
+          Specialization: {status.specializationLabel ?? 'Not selected yet'}
+        </span>
+      </p>
+
+      <p className="mt-1.5 text-sm">
         {status.focusCount > 0 ? (
           <span>
             {status.focusCount} left this term

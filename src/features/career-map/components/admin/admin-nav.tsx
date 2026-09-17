@@ -3,7 +3,11 @@ import Link from 'next/link'
 const SECTIONS = [
   { id: 'catalog', label: 'Action catalog', href: '/admin/career-map/catalog' },
   { id: 'general', label: 'General map', href: '/admin/career-map/general' },
-  { id: 'tracks', label: 'Tracks', href: '/admin/career-map/tracks' },
+  {
+    id: 'tracks',
+    label: 'Tracks & specializations',
+    href: '/admin/career-map/tracks',
+  },
 ] as const
 
 /**

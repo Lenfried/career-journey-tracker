@@ -3,6 +3,7 @@ import type {
   CareerAction,
   CareerActionProgress,
   CareerMap,
+  CareerSpecialization,
   CareerTrack,
 } from '@/lib/canonical'
 import {
@@ -59,6 +60,13 @@ const MAP: CareerMap = {
 const TRACK: CareerTrack = {
   id: 'track_example',
   label: 'Example track',
+  description: 'A broad career family.',
+}
+
+const SPECIALIZATION: CareerSpecialization = {
+  id: 'specialization_example',
+  trackId: TRACK.id,
+  label: 'Example specialization',
   description: 'Adds one, moves one, drops one.',
   placements: [
     { actionId: 'act_track_only', term: 'y2-summer' },
@@ -85,6 +93,7 @@ const progress = (
 
 const view = ({
   track = null,
+  specialization = null,
   progress: rows = [],
   evidence = new Map<string, EvidenceSummary>(),
   entryTerm = '2024FA',
@@ -93,6 +102,7 @@ const view = ({
   today = '2026-09-16',
 }: {
   track?: CareerTrack | null
+  specialization?: CareerSpecialization | null
   progress?: CareerActionProgress[]
   evidence?: Map<string, EvidenceSummary>
   /** Four enrollment terms before the default "today", so a junior starts at y1. */
@@ -104,11 +114,15 @@ const view = ({
   deriveCareerMapView({
     map: MAP,
     track,
+    specialization,
     tracks: [TRACK],
+    specializations: [SPECIALIZATION],
     catalog: CATALOG,
     assignment: {
       trackId: track?.id ?? null,
       trackSetAt: null,
+      specializationId: specialization?.id ?? null,
+      specializationSetAt: null,
       progress: rows,
     },
     evidence,
@@ -222,13 +236,15 @@ describe('deriveMapPosition', () => {
 })
 
 describe('mergePlacements', () => {
-  it('returns the general map untouched when there is no track', () => {
+  it('returns the general map untouched when there is no specialization', () => {
     expect(mergePlacements(MAP, null)).toHaveLength(MAP.placements.length)
-    expect(mergePlacements(MAP, null).every((p) => !p.fromTrack)).toBe(true)
+    expect(mergePlacements(MAP, null).every((p) => !p.fromSpecialization)).toBe(
+      true,
+    )
   })
 
   it('adds, excludes and moves', () => {
-    const merged = mergePlacements(MAP, TRACK)
+    const merged = mergePlacements(MAP, SPECIALIZATION)
     const byId = new Map(merged.map((p) => [p.actionId, p]))
 
     expect(byId.get('act_track_only')?.term).toBe('y2-summer')
@@ -236,8 +252,8 @@ describe('mergePlacements', () => {
     // Moved, not duplicated: one row, in the track's term.
     expect(merged.filter((p) => p.actionId === 'act_c')).toHaveLength(1)
     expect(byId.get('act_c')?.term).toBe('y2-fall')
-    expect(byId.get('act_c')?.fromTrack).toBe(true)
-    expect(byId.get('act_a')?.fromTrack).toBe(false)
+    expect(byId.get('act_c')?.fromSpecialization).toBe(true)
+    expect(byId.get('act_a')?.fromSpecialization).toBe(false)
   })
 })
 
@@ -371,16 +387,17 @@ describe('deriveCareerMapView', () => {
     ])
   })
 
-  it('keeps work done under a previous track', () => {
+  it('keeps work done under a previous specialization', () => {
     const result = view({
       track: TRACK,
+      specialization: SPECIALIZATION,
       progress: [progress('act_b', { note: 'Did this before switching.' })],
     })
 
-    // act_b is excluded by the track, so it is not on the timeline...
+    // act_b is excluded by the specialization, so it is not on the timeline...
     expect(find(result, 'act_b')).toBeUndefined()
     // ...but the work is not lost.
-    expect(result.previousTrackWork).toEqual([
+    expect(result.previousSpecializationWork).toEqual([
       {
         actionId: 'act_b',
         title: 'Do act_b',
@@ -392,17 +409,21 @@ describe('deriveCareerMapView', () => {
     ])
   })
 
-  it('carries progress across a track change rather than resetting it', () => {
+  it('carries progress across a specialization change rather than resetting it', () => {
     const rows = [progress('act_c')]
 
     // Same action, same id, different term on the track.
     const general = view({ progress: rows })
-    const tracked = view({ track: TRACK, progress: rows })
+    const specialized = view({
+      track: TRACK,
+      specialization: SPECIALIZATION,
+      progress: rows,
+    })
 
     expect(find(general, 'act_c')?.term).toBe('y3-spring')
-    expect(find(tracked, 'act_c')?.term).toBe('y2-fall')
+    expect(find(specialized, 'act_c')?.term).toBe('y2-fall')
     expect(find(general, 'act_c')?.status).toBe('done')
-    expect(find(tracked, 'act_c')?.status).toBe('done')
+    expect(find(specialized, 'act_c')?.status).toBe('done')
   })
 
   it('shows an evidence hint until the action is settled', () => {
@@ -454,16 +475,17 @@ describe('getCareerMap', () => {
   it('resolves a real student against the real template', async () => {
     const result = await getCareerMap('stu_okonkwo_amara')
 
-    expect(result?.trackId).toBe('track_swe')
+    expect(result?.trackId).toBe('track_software_engineering')
+    expect(result?.specializationId).toBe('specialization_backend_engineering')
     expect(result?.terms).toHaveLength(11)
     expect(result?.doneCount).toBeGreaterThan(0)
     // She looked at research before settling on backend; that row is kept.
-    expect(result?.previousTrackWork.map((w) => w.actionId)).toContain(
-      'act_lab_email',
-    )
+    expect(
+      result?.previousSpecializationWork.map((work) => work.actionId),
+    ).toContain('act_lab_email')
   })
 
-  it('keeps student PII out of the view model', async () => {
+  it('keeps direct student identifiers out of the view model', async () => {
     const result = await getCareerMap('stu_okonkwo_amara')
     const serialised = JSON.stringify(result)
 

@@ -5,6 +5,7 @@
 // already applied, so no component has to remember either.
 
 import type {
+  CareerMapTerm,
   Classification,
   EnrollmentStatus,
   StudentRecord,
@@ -27,6 +28,28 @@ export type StudentSummary = {
   updatedAt: string
 }
 
+export const STUDENT_ROSTER_SORTS = [
+  'name',
+  'entry-term',
+  'classification',
+  'track',
+  'specialization',
+  'career-term',
+] as const
+
+export type StudentRosterSort = (typeof STUDENT_ROSTER_SORTS)[number]
+export type SortDirection = 'asc' | 'desc'
+
+/** A roster row enriched with the student's structured career-map taxonomy. */
+export type StudentRosterRow = StudentSummary & {
+  entryTerm: string
+  entryTermLabel: string
+  trackLabel: string | null
+  specializationLabel: string | null
+  currentCareerTerm: CareerMapTerm | null
+  currentCareerTermLabel: string | null
+}
+
 /** The profile header, plus the counts shown on the overview tab. */
 export type StudentDetail = StudentSummary & {
   firstName: string
@@ -43,6 +66,11 @@ export type StudentDetail = StudentSummary & {
 export type StudentFilters = {
   /** Matches display name, legal name, or EMPLID. Case-insensitive. */
   search?: string
+}
+
+export type StudentRosterFilters = StudentFilters & {
+  sort?: StudentRosterSort
+  direction?: SortDirection
 }
 
 /** Narrow alias for the identity fields the name helpers need. */

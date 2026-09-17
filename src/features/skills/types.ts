@@ -10,13 +10,13 @@ import type {
 /**
  * Where a requirement came from.
  *
- * `track` — the path the student is on asks for it. These swap out the moment
- * the student changes track, which is the point: what a path demands is a fact
- * about the path, not about the student.
+ * `specialization` — the focused path asks for it. These swap out the moment
+ * the student changes specialization, which is the point: what a path demands
+ * is a fact about the path, not about the student.
  * `student` — an advisor added it for this student specifically. Survives a
- * track change, because somebody put it there on purpose.
+ * specialization change, because somebody put it there on purpose.
  */
-export type RequiredSkillSource = 'track' | 'student'
+export type RequiredSkillSource = 'specialization' | 'student'
 
 /** A required skill on its way into the view, tagged with where it came from. */
 export type SourcedRequiredSkill = RequiredSkill & {
@@ -51,7 +51,7 @@ export type RequiredSkillView = {
   /** True when the student has a skill with a matching normalised name. */
   covered: boolean
   source: RequiredSkillSource
-  /** "Required by the ML research track", or "Added by an advisor". */
+  /** "Required by the AI/ML research specialization", or advisor-added. */
   sourceLabel: string
 }
 

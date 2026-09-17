@@ -129,24 +129,17 @@ export type LookupName = keyof Lookups
 /* purpose:                                                                    */
 /*                                                                            */
 /* The student's own assignment is here, next to the rest of the student record. */
-/* The department's template — the catalog, the map, the tracks — is further     */
-/* down, after the data groups, because a track states the skills a path         */
-/* requires and so has to come after `requiredSkillSchema`.                      */
+/* The department's template — catalog, map, tracks, and specializations — is    */
+/* further down because specialization skills use `requiredSkillSchema`.         */
 /*                                                                              */
 /*   1. `careerActions` — the catalog. Every action is defined ONCE, with a     */
-/*      stable id, no matter how many tracks recommend it. This is what lets a  */
-/*      student change track without losing credit for work already done:       */
-/*      progress is keyed on the action id, and the same id is the same action  */
-/*      everywhere. Defining "do a mock interview" separately inside each track */
-/*      would silently uncheck it the day a student switched.                   */
+/*      stable id, no matter how many paths recommend it. Progress is keyed on  */
+/*      that id, so changing paths does not lose completed work.                */
 /*   2. `careerMaps` — the general plan every student gets: which action sits   */
 /*      in which term.                                                          */
-/*   3. `careerTracks` — a specialisation (backend, ML research, quant) layered */
-/*      ON TOP of the general plan rather than replacing it. A track may add an */
-/*      action, exclude one that does not apply to it, or move one to a         */
-/*      different term. It may not restate what an action says — that lives in  */
-/*      the catalog, once, so a wording fix reaches every track at the same     */
-/*      time.                                                                   */
+/*   3. `careerTracks` — broad families used for navigation and reporting.      */
+/*   4. `careerSpecializations` — focused paths layered ON TOP of the general   */
+/*      map. They may add, exclude, or move an action, but never restate it.     */
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -263,29 +256,53 @@ export const careerActionProgressSchema = z
  *
  * There is one map and everyone is on it. A student does not get "assigned" to
  * it and there is no version to pin: the map is the department's plan, the same
- * eleven terms for everybody, and a track overlays a specialisation on top. No
- * track means the general map, which is the common case.
+ * eleven terms for everybody. A broad career track (for example, Software
+ * Engineering) may be selected on its own, and an optional specialization
+ * (Backend Engineering) layers focused actions and skills on top. No track
+ * means the student is still exploring, which is the common underclass state.
  *
- * What is per-student is only this: which track, and what has happened term by
- * term. Where a student sits on the map, and which terms predate their arrival,
- * are derived from `entryTerm` and `classification` — they are facts about the
- * student's own calendar, not something for an advisor to keep in step by hand.
+ * What is per-student is only this: which track and specialization, and what
+ * has happened term by term. Where a student sits on the map, and which terms
+ * predate their arrival, are derived from `entryTerm` and `classification` —
+ * they are facts about the student's own calendar, not something for an
+ * advisor to keep in step by hand.
  *
  * Progress is sparse — only actions an advisor has actually touched appear, and
  * the service layer fills the rest in at `not-started`, the same way the
  * readiness checklist fills missing artifact rows.
  *
- * Progress is keyed on action id and never on track, which is the whole point:
- * change `trackId` and every shared action stays exactly as it was. Rows for
- * actions the new track does not include are kept, not deleted — a sophomore
- * who spent a year on research before switching to industry did that work, and
- * erasing it punishes exactly the exploration this tool exists to encourage.
+ * Progress is keyed on action id and never on the specialization, which is the
+ * whole point: change paths and every shared action stays exactly as it was.
+ * Rows the new specialization does not include are kept, not deleted — a
+ * sophomore who spent a year on research before switching to industry did
+ * that work, and erasing it punishes the exploration this tool encourages.
  */
-export const studentCareerMapSchema = z.strictObject({
-  trackId: z.string().nullable(),
-  trackSetAt: timestampSchema.nullable(),
-  progress: z.array(careerActionProgressSchema),
-})
+export const studentCareerMapSchema = z
+  .strictObject({
+    /** Broad career family. May be set before the student narrows their path. */
+    trackId: z.string().nullable(),
+    trackSetAt: timestampSchema.nullable(),
+    /** A child of `trackId`; this is the overlay applied to the general map. */
+    specializationId: z.string().nullable(),
+    specializationSetAt: timestampSchema.nullable(),
+    progress: z.array(careerActionProgressSchema),
+  })
+  .refine((map) => map.trackId !== null || map.specializationId === null, {
+    message: 'A specialization requires a track',
+    path: ['specializationId'],
+  })
+  .refine((map) => (map.trackId === null) === (map.trackSetAt === null), {
+    message: 'trackId and trackSetAt must be set together',
+    path: ['trackSetAt'],
+  })
+  .refine(
+    (map) =>
+      (map.specializationId === null) === (map.specializationSetAt === null),
+    {
+      message: 'specializationId and specializationSetAt must be set together',
+      path: ['specializationSetAt'],
+    },
+  )
 
 export type CareerActionProgress = z.infer<typeof careerActionProgressSchema>
 export type StudentCareerMap = z.infer<typeof studentCareerMapSchema>
@@ -313,12 +330,9 @@ export const studentIdentitySchema = z.strictObject({
    * The term the student started at York — `2024FA` for a transfer who arrived
    * in fall 2024, not the term they would have started as a freshman.
    *
-   * The career map does not derive a student's position from this today (see
-   * `deriveMapPosition` in the career-map feature, which trusts `classification`
-   * because the registrar maintains it and it never disagrees with the rest of
-   * the app). It is here because it is the fact a real import carries, and
-   * because "entered 2023FA, still classified sophomore" is the signal that
-   * someone is part-time or has stopped out — which an advisor wants to see.
+   * `deriveMapPosition` uses classification for the student's current year and
+   * this term to determine where their own map begins. That distinction keeps
+   * pre-transfer terms visible without treating them as overdue work.
    */
   entryTerm: academicTermSchema,
   updatedAt: timestampSchema,
@@ -403,9 +417,9 @@ export const studentRecordSchema = studentIdentitySchema.extend({
 /* Career map — the department's template                                      */
 /*                                                                            */
 /* Everything above is what one student carries. This is what the department   */
-/* publishes: the action catalog, the general map, and the tracks that layer   */
-/* over it. It sits below the data groups because a track states the skills    */
-/* its path requires, and that schema is one of the groups.                    */
+/* publishes: the action catalog, the general map, broad tracks, and the       */
+/* specializations that layer over it. It sits below the data groups because   */
+/* a specialization states required skills, whose schema is one of the groups. */
 /* -------------------------------------------------------------------------- */
 
 /** Where an action's completion can be corroborated from existing records. */
@@ -416,8 +430,8 @@ export const actionEvidenceSchema = z.strictObject({
 })
 
 /**
- * One recommended action, defined once and referenced by every map and track
- * that recommends it.
+ * One recommended action, defined once and referenced by every map and
+ * specialization that recommends it.
  */
 export const careerActionSchema = z.strictObject({
   id: z.string().min(1),
@@ -434,13 +448,13 @@ export const careerActionSchema = z.strictObject({
   resourceUrl: z.url().nullable(),
 })
 
-/** An action placed in a term. The unit both maps and tracks are built from. */
+/** An action placed in a term. Maps and specialization overlays use this. */
 export const careerActionPlacementSchema = z.strictObject({
   actionId: z.string().min(1),
   term: careerMapTermSchema,
 })
 
-/** The general plan. Everyone gets this; tracks layer on top of it. */
+/** The general plan. Everyone gets this; specializations layer on top of it. */
 export const careerMapSchema = z.strictObject({
   id: z.string().min(1),
   /**
@@ -460,15 +474,24 @@ export const careerMapSchema = z.strictObject({
   placements: z.array(careerActionPlacementSchema),
 })
 
+/** A broad career family used to organize related specializations. */
+export const careerTrackSchema = z.strictObject({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  description: z.string().min(1),
+})
+
 /**
- * A specialisation layered over the general map.
+ * A focused path inside a track, layered over the general map.
  *
  * Three operations, and only three: `placements` adds an action, or moves one
  * the general map already places; `excludes` drops one that does not apply.
  * Nothing here can change what an action *says*.
  */
-export const careerTrackSchema = z.strictObject({
+export const careerSpecializationSchema = z.strictObject({
   id: z.string().min(1),
+  /** The broad career family this specialization belongs to. */
+  trackId: z.string().min(1),
   label: z.string().min(1),
   description: z.string().min(1),
   placements: z.array(careerActionPlacementSchema),
@@ -476,12 +499,12 @@ export const careerTrackSchema = z.strictObject({
   /**
    * What this path asks a student to be able to do.
    *
-   * Required skills belong to the track, not to the student. A student's own
-   * skills are theirs and do not move; what a path demands of them changes the
-   * moment they change path, and the skills gap should follow. A student can
-   * still carry extra requirements of their own — see `requiredSkills` on the
-   * student record — and those survive a track change because an advisor put
-   * them there deliberately.
+   * Required skills belong to the specialization, not to the student. A
+   * student's own skills are theirs and do not move; what a path demands of
+   * them changes the moment they change specialization, and the skills gap
+   * should follow. A student can still carry extra requirements of their own —
+   * see `requiredSkills` on the student record — and those survive a change
+   * because an advisor put them there deliberately.
    */
   requiredSkills: z.array(requiredSkillSchema),
 })
@@ -491,22 +514,73 @@ export type CareerAction = z.infer<typeof careerActionSchema>
 export type CareerActionPlacement = z.infer<typeof careerActionPlacementSchema>
 export type CareerMap = z.infer<typeof careerMapSchema>
 export type CareerTrack = z.infer<typeof careerTrackSchema>
+export type CareerSpecialization = z.infer<typeof careerSpecializationSchema>
 
 /**
  * Group 7 — the lookups, the career map template, plus every student. This is
  * the whole dataset.
  */
-export const canonicalDatasetSchema = z.strictObject({
-  version: z.number().int().positive(),
-  /** JSON has no comments. This is the fixture file's header note; ignored. */
-  _comment: z.array(z.string()).optional(),
-  lookups: lookupsSchema,
-  /** Every action, defined once. Maps and tracks reference these by id. */
-  careerActions: z.array(careerActionSchema),
-  careerMaps: z.array(careerMapSchema),
-  careerTracks: z.array(careerTrackSchema),
-  students: z.array(studentRecordSchema),
-})
+export const canonicalDatasetSchema = z
+  .strictObject({
+    version: z.number().int().positive(),
+    /** JSON has no comments. This is the fixture file's header note; ignored. */
+    _comment: z.array(z.string()).optional(),
+    lookups: lookupsSchema,
+    /** Every action, defined once. Maps and specializations reference these. */
+    careerActions: z.array(careerActionSchema),
+    careerMaps: z.array(careerMapSchema),
+    /** Broad, stable career families used for navigation and reporting. */
+    careerTracks: z.array(careerTrackSchema),
+    /** Focused overlays inside tracks. Students may select one or remain broad. */
+    careerSpecializations: z.array(careerSpecializationSchema),
+    students: z.array(studentRecordSchema),
+  })
+  .superRefine((dataset, ctx) => {
+    const trackIds = new Set(dataset.careerTracks.map((track) => track.id))
+    const specializations = new Map(
+      dataset.careerSpecializations.map((specialization) => [
+        specialization.id,
+        specialization,
+      ]),
+    )
+
+    dataset.careerSpecializations.forEach((specialization, index) => {
+      if (!trackIds.has(specialization.trackId)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['careerSpecializations', index, 'trackId'],
+          message: `Unknown career track: ${specialization.trackId}`,
+        })
+      }
+    })
+
+    dataset.students.forEach((student, index) => {
+      const { trackId, specializationId } = student.careerMap
+      if (trackId && !trackIds.has(trackId)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['students', index, 'careerMap', 'trackId'],
+          message: `Unknown career track: ${trackId}`,
+        })
+      }
+
+      if (!specializationId) return
+      const specialization = specializations.get(specializationId)
+      if (!specialization) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['students', index, 'careerMap', 'specializationId'],
+          message: `Unknown career specialization: ${specializationId}`,
+        })
+      } else if (specialization.trackId !== trackId) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['students', index, 'careerMap', 'specializationId'],
+          message: `${specializationId} does not belong to ${trackId}`,
+        })
+      }
+    })
+  })
 
 export type StudentIdentity = z.infer<typeof studentIdentitySchema>
 export type CareerGoal = z.infer<typeof careerGoalSchema>
