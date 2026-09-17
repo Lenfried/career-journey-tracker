@@ -37,6 +37,34 @@ Phase 2. Do not wire them in to solve a Phase 1 problem.
 
 Runs on a campus Linux VM. Development happens in WSL2 on Windows.
 
+## Skills
+
+Agent skills live in `.agents/skills/`, one directory per skill with a `SKILL.md`
+entrypoint. `.claude/skills/` holds nothing but symlinks to them:
+
+```
+.agents/skills/prisma-cli/SKILL.md            # the real file
+.claude/skills/prisma-cli -> ../../.agents/skills/prisma-cli
+```
+
+All twelve follow this. Add a skill in `.agents/skills/`, then symlink it —
+never the other way round. opencode reads `.agents/skills/` directly; Claude
+Code only reads `.claude/skills/`, which is what the symlink is for.
+
+The entrypoint must be named exactly `SKILL.md` and its `name:` must match the
+directory. A browser-renamed `SKILL (1).md` fails silently — no error, the skill
+just never loads.
+
+Symlinks need `git config core.symlinks true` and Developer Mode on native
+Windows. Inside WSL2 they work as-is. If a skill's file looks like one line of
+text reading `../../.agents/skills/...`, that is what went wrong.
+
+Present: `code-review-and-quality`, `code-simplification`,
+`frontend-ui-engineering`, and nine `prisma-*` API references.
+
+A skill's body loads only when the task matches it. That is what keeps it out of
+this file — put a procedure in a skill, put a rule in here.
+
 ## The architecture rule
 
 ```
