@@ -5,6 +5,19 @@
 //
 //   updateCareerGoal() — MVP screen 2
 //
+// WHEN YOU BUILD THE GOAL FORM, THE `advisorNotes` TEXTAREA NEEDS
+// `<AiVisibilityBadge />` FROM `@/components/ai-visibility-badge`.
+//
+// That field is sent verbatim to a language model by the advisor summary
+// feature. Advising notes are withheld by type — note types carry an
+// `aiEligible` flag, so crisis and referral notes never leave — but
+// `advisorNotes` is free text with no type, so no filter can reach it. The
+// person typing is the only control, and a control nobody is told about is not
+// a control. The read-only card in `components/career-goal-card.tsx` already
+// carries the badge; the form is where it actually matters.
+//
+// See `docs/ai-summary.md`, "Residual risk worth knowing about".
+//
 // Two rules bind whatever lands here:
 //
 //   1. A bare Server Action is a public HTTP endpoint. Every mutation is

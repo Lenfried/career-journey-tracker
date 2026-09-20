@@ -67,6 +67,25 @@ export async function listFollowUpStatuses(): Promise<
   )
 }
 
+/**
+ * The note type ids whose notes may be included in a payload sent to a model.
+ *
+ * Lives here rather than in the summary feature because the flag is a property
+ * of the note type lookup, and the lookup is this feature's data. The summary
+ * feature asks; it does not read `lib/fixtures` and it does not keep its own
+ * list of ids.
+ *
+ * Fails closed: a note type with no `aiEligible` flag is absent from this set.
+ * See `docs/ai-summary.md`.
+ */
+export async function listAiEligibleNoteTypeIds(): Promise<Set<string>> {
+  return new Set(
+    loadLookups()
+      .noteTypes.filter((type) => type.aiEligible)
+      .map((type) => type.id),
+  )
+}
+
 /* -------------------------------------------------------------------------- */
 /* Derivation                                                                  */
 /* -------------------------------------------------------------------------- */

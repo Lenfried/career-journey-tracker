@@ -1,3 +1,4 @@
+import { AiVisibilityBadge } from '@/components/ai-visibility-badge'
 import { EmptyState } from '@/components/empty-state'
 import type { Importance } from '@/lib/canonical'
 import type { RequiredSkillView, SkillsView, StudentSkillView } from '../types'
@@ -152,7 +153,13 @@ function RequiredSkillRow({ skill }: { skill: RequiredSkillView }) {
         </span>
       </div>
       {skill.rationale ? (
-        <p className="text-muted-foreground mt-1 text-sm">{skill.rationale}</p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <p className="text-muted-foreground text-sm">{skill.rationale}</p>
+          {/* Lower risk than the goal notes — this describes the role, not the
+              student — but it is still free text that reaches a model, and
+              labelling only some of those teaches advisors the wrong rule. */}
+          <AiVisibilityBadge />
+        </div>
       ) : null}
     </li>
   )

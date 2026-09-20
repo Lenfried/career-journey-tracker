@@ -8,11 +8,11 @@ A web application that helps faculty advisors and career advisors track the care
 
 The project is being built **fixture-driven**: we agreed on the shape of a student record first, wrote realistic sample records against that shape, and are building the application on top of them. The real data source — a Navigate360 export, a CUNYFirst integration, advisor manual entry, or some combination — has not been decided yet, and this approach means we do not have to wait for that decision to start building.
 
-**Phase 1 (done): read-only.** Canonical schema, 18 fixture students, the service layer, and three screens — dashboard, student roster, student profile.
+**Phase 1 (done): read-only.** Canonical schema, 18 fixture students, the service layer, and three screens — dashboard, student roster, student profile. Plus the AI advisor summary, pulled forward from Phase 2.
 
 **Week 2 (next): write operations.** Add a note, log a milestone, add a skill, update readiness status, edit a career goal, add a student.
 
-**Phase 2 (later): authentication, CSV import, analytics, AI summaries, admin, export.**
+**Phase 2 (later): authentication, CSV import, analytics, admin, export.**
 
 ## How it works
 
@@ -54,8 +54,22 @@ Built and working:
   - _Notes_ — advising notes, newest first, with follow-up dates.
   - _Milestones_ — internships, jobs, research, leadership, workshops, career fairs, networking.
   - _Skills_ — what the student has next to what the target role requires, with the gap between them highlighted.
+  - _AI summary_ — a written briefing for the advisor, generated on request and cached.
 
 Read-only for now. Every screen fetches on the server; there is almost no client-side JavaScript.
+
+### AI advisor summary
+
+An advisor presses a button and gets a written briefing on where the student stands, with recommendations specific to their stated goal — roughly the ten minutes it takes to read the other four tabs before a meeting.
+
+Four things about it are worth knowing before you touch it, and all four are explained in [`docs/ai-summary.md`](docs/ai-summary.md):
+
+- **The model is not trusted with facts.** Every count is computed in application code and handed to the model finished. It interprets and writes; it does not recall or count.
+- **The student is not identified.** No name, EMPLID, email, advisor, bio or artifact links go into the payload. Advising notes are filtered by an `aiEligible` flag on the note type that defaults to off, so crisis and referral notes are never sent.
+- **It is cached, and it tells you when it is out of date.** Generation happens only on the button press. A fingerprint over the payload detects when the record has changed since.
+- **It works with no API key.** The proxy is not reachable off campus, so without a key the feature produces clearly-labelled sample output instead of crashing.
+
+Nothing is sent anywhere except the York LiteLLM proxy.
 
 ## Project Structure
 
@@ -76,19 +90,25 @@ src/
 ├── lib/                  # Cross-cutting
 │   ├── canonical.ts          # The canonical schema. Source of truth.
 │   ├── fixtures.ts           # The data source. The only file that knows where data lives.
+│   ├── summary-store.ts      # Where generated summaries live. Also a data source.
+│   ├── ai.ts                 # The LiteLLM client. The only module that calls a model.
+│   ├── env.ts                # Environment configuration, Zod-validated at boot
+│   ├── authz.ts              # authedAction() — a placeholder, read the comment first
 │   ├── lookups.ts            # Resolving lookup ids to labels
 │   ├── labels.ts             # Display labels for the fixed vocabularies
 │   └── dates.ts              # Calendar dates vs timestamps — they are not the same thing
 └── components/ui/        # Pre-built UI components — managed by shadcn
 ```
 
-The features are `students`, `goals`, `skills`, `readiness`, `notes`, `milestones`, and `dashboard`. Every one has the same five files. If you're adding a feature, copy the shape from an existing one.
+The features are `students`, `goals`, `skills`, `readiness`, `notes`, `milestones`, `dashboard`, and `summary`. Every one has the same five files. If you're adding a feature, copy the shape from an existing one.
 
 ## Getting Started
 
 ### Prerequisites
 
 Node.js 20+ and npm. **No database, no Docker, no environment variables** — that is the point of building fixture-first.
+
+The AI summary is the one feature that can use configuration, and it is optional. Without `LITELLM_API_KEY` it produces clearly-labelled sample output, which is also what you get off campus, where the proxy does not resolve. To use the real thing, copy `.env.example` to `.env`, set the key, and be on the campus network.
 
 ### Setup
 
@@ -140,6 +160,6 @@ This codebase is handed to a new student developer each year. Keep these in mind
 - **Every feature uses the same five files:** `queries.ts`, `actions.ts`, `schemas.ts`, `types.ts`, `components/`.
 - **Prefer shadcn components** over hand-rolling UI elements, unless the shadcn one is a Client Component and the usage is static — then hand-roll and leave a comment saying why.
 - **Don't add dependencies** without a good reason. Every package is a maintenance cost for the next student.
-- **No student PII in logs, error messages, or test fixtures.**
+- **No student PII in logs, error messages, or test fixtures.** Nor in anything sent to a model — see [`docs/ai-summary.md`](docs/ai-summary.md).
 
 For the detailed rules, see [AGENTS.md](./AGENTS.md).

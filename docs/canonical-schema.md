@@ -34,6 +34,10 @@ TypeScript unions. Adding a tenth milestone type must not require a deploy.
 Records reference them by id (`typeId`, `programId`). Resolve to a label through
 the service layer.
 
+A lookup row may carry policy as well as a label: note types also have
+`aiEligible`, for the same reason the type itself is data. Deciding that a new
+note type is career-relevant must not require a deploy either. See below.
+
 The vocabularies that _are_ fixed unions are the ones with ordinal meaning that
 the UI reasons about — proficiency, importance, artifact status, classification.
 Those are not configuration.
@@ -158,12 +162,32 @@ Likely to evolve: **low**.
 
 ```
 lookups.programs        [{ id, label }]
-lookups.noteTypes       [{ id, label }]
+lookups.noteTypes       [{ id, label, aiEligible }]
 lookups.milestoneTypes  [{ id, label }]
 lookups.artifactTypes   [{ id, label }]
 ```
 
 `artifactTypes` is ordered; the readiness checklist renders in that order.
+
+### `noteTypes.aiEligible`
+
+Whether notes of this type may be included in the payload sent to a model by the
+advisor summary feature. Defaults to **`false`** when the field is absent.
+
+The default is the whole design. A note type added later by someone who has not
+read this page is excluded from model calls until somebody marks it eligible on
+purpose. An allowlist that fails closed is the only kind worth having when the
+failure mode is a crisis note reaching a language model.
+
+Current settings: `note_academic`, `note_career` and `note_check_in` are
+eligible; `note_crisis` and `note_referral` are not. The excluded two carry
+financial hardship, withdrawal deliberation and support-service referrals —
+material that has no place in a career recommendation, and that an advisor
+reading a career summary has not asked to see summarised back at them.
+
+The summary feature reports how many notes it withheld, so the advisor can tell
+the difference between "no other notes" and "other notes exist and were not
+sent". See `docs/ai-summary.md`.
 
 ## Changing this schema
 

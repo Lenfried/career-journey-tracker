@@ -101,15 +101,34 @@ export const lookupItemSchema = z.strictObject({
   label: z.string().min(1),
 })
 
+/**
+ * Note types carry one extra flag: whether a note of this type may be included
+ * in the payload sent to a model.
+ *
+ * This is data rather than a hardcoded list in the AI feature for the same
+ * reason the type itself is data — adding a tenth note type must not require a
+ * deploy, and neither must deciding that the tenth type is career-relevant.
+ *
+ * It defaults to `false`, and that default is the point. A note type added by
+ * someone who has never read this file is excluded from model calls until
+ * somebody makes the inclusion deliberate. An allowlist that fails closed is
+ * the only kind worth having when the failure mode is sending a crisis note to
+ * a language model.
+ */
+export const noteTypeLookupSchema = lookupItemSchema.extend({
+  aiEligible: z.boolean().default(false),
+})
+
 export const lookupsSchema = z.strictObject({
   programs: z.array(lookupItemSchema),
-  noteTypes: z.array(lookupItemSchema),
+  noteTypes: z.array(noteTypeLookupSchema),
   milestoneTypes: z.array(lookupItemSchema),
   /** Ordered — the readiness checklist renders in this order. */
   artifactTypes: z.array(lookupItemSchema),
 })
 
 export type LookupItem = z.infer<typeof lookupItemSchema>
+export type NoteTypeLookupItem = z.infer<typeof noteTypeLookupSchema>
 export type Lookups = z.infer<typeof lookupsSchema>
 export type LookupName = keyof Lookups
 

@@ -26,11 +26,11 @@
       { "id": "prog_math_ba", "label": "Mathematics, B.A." }
     ],
     "noteTypes": [
-      { "id": "note_academic", "label": "Academic" },
-      { "id": "note_career", "label": "Career" },
-      { "id": "note_check_in", "label": "Check-in" },
-      { "id": "note_crisis", "label": "Crisis" },
-      { "id": "note_referral", "label": "Referral" }
+      { "id": "note_academic", "label": "Academic", "aiEligible": true },
+      { "id": "note_career", "label": "Career", "aiEligible": true },
+      { "id": "note_check_in", "label": "Check-in", "aiEligible": true },
+      { "id": "note_crisis", "label": "Crisis", "aiEligible": false },
+      { "id": "note_referral", "label": "Referral", "aiEligible": false }
     ],
     "milestoneTypes": [
       { "id": "ms_internship", "label": "Internship" },

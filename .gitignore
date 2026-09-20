@@ -45,3 +45,8 @@ next-env.d.ts
 .env
 .env.local
 !.env.example
+
+# Generated AI advisor summaries. The Phase 1 stand-in for the career_summary
+# table — see src/lib/summary-store.ts. Machine-generated, per-developer, and
+# the shape of a FERPA-protected artifact. Never commit it.
+/.cache/
