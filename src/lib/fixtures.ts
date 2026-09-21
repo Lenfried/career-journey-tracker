@@ -68,13 +68,12 @@ export function loadDataset(): CanonicalDataset {
 
 /**
  * Writes a full dataset back to `fixtures/students.json` and updates the cache
- * to match — the only place this application persists an admin edit.
+ * to match — the only place this application persists a fixture edit.
  *
- * Takes the whole dataset rather than a patch because every write today is
- * "the admin template changed": the catalog, the general map, a track, or a
- * specialization. A caller builds the new dataset by spreading `loadDataset()`
- * and replacing the one array it changed, which keeps this function from
- * needing to know which slice moved.
+ * Callers replace the relevant template or student array. Student advisor
+ * updates include their session note in the same save. This single-process
+ * fixture store does not provide cross-process transactions; a future
+ * database adapter must.
  *
  * Validated before anything touches disk, same as a read — a form bug should
  * fail as a thrown error the admin screen can show, not as a fixture file that
