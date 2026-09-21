@@ -1,6 +1,6 @@
 // notes — queries
 
-import type { AdvisingNote } from '@/lib/canonical'
+import type { AdvisingNote, LookupItem } from '@/lib/canonical'
 import {
   daysBetween,
   describeFollowUp,
@@ -10,6 +10,10 @@ import {
 import { loadLookups, loadStudent, loadStudents } from '@/lib/fixtures'
 import { indexLookup } from '@/lib/lookups'
 import type { AdvisingNoteView, FollowUpStatus } from './types'
+
+export async function getNoteTypes(): Promise<LookupItem[]> {
+  return loadLookups().noteTypes
+}
 
 /** A student's notes, most recent session first. */
 export async function getStudentNotes(

@@ -164,6 +164,10 @@ note (by `sessionDate`) has a `followUpDate` strictly before today in
 `America/New_York`. Only the most recent note counts — an old note with a stale
 follow-up date is history, not a task.
 
+The student Notes tab supports creating, editing, and deleting notes against the
+fixture dataset. `recordedBy` comes from the current fixture-mode advisor rather
+than form input, and editing a note does not change its original recorder.
+
 Likely to evolve: **low**.
 
 ### 6. Career milestones

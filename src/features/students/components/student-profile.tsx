@@ -6,7 +6,8 @@ import { getStudentGoal } from '@/features/goals/queries'
 import { MilestoneList } from '@/features/milestones/components/milestone-list'
 import { getStudentMilestones } from '@/features/milestones/queries'
 import { NoteList } from '@/features/notes/components/note-list'
-import { getStudentNotes } from '@/features/notes/queries'
+import { getNoteTypes, getStudentNotes } from '@/features/notes/queries'
+import { todayOnCampus } from '@/lib/dates'
 import { ReadinessChecklist } from '@/features/readiness/components/readiness-checklist'
 import { getReadinessStatus } from '@/features/readiness/queries'
 import { SkillsGapView } from '@/features/skills/components/skills-gap-view'
@@ -83,7 +84,18 @@ async function OverviewTab({ studentId }: { studentId: string }) {
 }
 
 async function NotesTab({ studentId }: { studentId: string }) {
-  return <NoteList notes={await getStudentNotes(studentId)} />
+  const [notes, noteTypes] = await Promise.all([
+    getStudentNotes(studentId),
+    getNoteTypes(),
+  ])
+  return (
+    <NoteList
+      studentId={studentId}
+      notes={notes}
+      noteTypes={noteTypes}
+      today={todayOnCampus()}
+    />
+  )
 }
 
 async function MilestonesTab({ studentId }: { studentId: string }) {
