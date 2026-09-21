@@ -3,6 +3,7 @@ import {
   ARTIFACT_STATUSES,
   CAREER_MAP_TERMS,
   canonicalDatasetSchema,
+  noteTypeLookupSchema,
   studentCareerMapSchema,
 } from './canonical'
 import {
@@ -64,6 +65,31 @@ describe('fixture dataset', () => {
         expect(artifactTypes).toContain(artifact.typeId)
       }
     }
+  })
+
+  it('keeps the sensitive note types out of AI processing', () => {
+    // `aiEligible` is what stops a crisis note reaching a language model. It is
+    // data rather than code so it can change without a deploy, which also means
+    // it can change by accident — this is the assertion that makes that loud.
+    const noteTypes = new Map(
+      loadLookups().noteTypes.map((type) => [type.id, type.aiEligible]),
+    )
+
+    expect(noteTypes.get('note_crisis')).toBe(false)
+    expect(noteTypes.get('note_referral')).toBe(false)
+    expect(noteTypes.get('note_career')).toBe(true)
+  })
+
+  it('defaults a note type with no aiEligible flag to ineligible', () => {
+    // Fails closed. A note type added by someone who has not read
+    // docs/ai-summary.md is excluded from model calls until somebody makes the
+    // inclusion deliberate.
+    const parsed = noteTypeLookupSchema.parse({
+      id: 'note_accommodations',
+      label: 'Accommodations',
+    })
+
+    expect(parsed.aiEligible).toBe(false)
   })
 
   it('keeps every record obviously fictional', () => {

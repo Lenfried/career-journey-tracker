@@ -13,7 +13,7 @@ import {
 } from './mutations'
 import { advisingNoteFormSchema } from './schemas'
 
-const ROLES = ['advisor', 'faculty', 'admin'] as const
+const ROLES = ['faculty-advisor', 'career-advisor', 'admin'] as const
 const notePath = (studentId: string, error?: string) =>
   `/students/${studentId}?tab=notes${error ? `&error=${encodeURIComponent(error)}` : ''}`
 

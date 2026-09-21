@@ -6,7 +6,7 @@ import type { AdvisingUpdateState } from '@/features/students/types'
 import { updateActionProgress } from './progress'
 
 export const recordActionProgress = authedAction(
-  ['advisor', 'faculty', 'admin'],
+  ['faculty-advisor', 'career-advisor', 'admin'],
   async (
     actor,
     studentId: string,

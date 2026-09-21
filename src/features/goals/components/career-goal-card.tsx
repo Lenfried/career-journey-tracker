@@ -1,3 +1,4 @@
+import { AiVisibilityBadge } from '@/components/ai-visibility-badge'
 import { EmptyState } from '@/components/empty-state'
 import type { CareerGoalView } from '../types'
 
@@ -37,9 +38,15 @@ export function CareerGoalCard({ goal }: { goal: CareerGoalView | null }) {
 
       {goal.advisorNotes ? (
         <div className="mt-4 border-t pt-4">
-          <p className="text-muted-foreground mb-1 text-xs font-medium">
-            Advisor notes on this goal
-          </p>
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <p className="text-muted-foreground text-xs font-medium">
+              Advisor notes on this goal
+            </p>
+            {/* Free text with no type, so the note-type filter cannot reach it.
+                The advisor writing it is the only thing standing between this
+                field and the model — so say so, here, where they read it. */}
+            <AiVisibilityBadge />
+          </div>
           <p className="text-sm">{goal.advisorNotes}</p>
         </div>
       ) : null}

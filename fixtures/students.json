@@ -41,23 +41,28 @@
     "noteTypes": [
       {
         "id": "note_academic",
-        "label": "Academic"
+        "label": "Academic",
+        "aiEligible": true
       },
       {
         "id": "note_career",
-        "label": "Career"
+        "label": "Career",
+        "aiEligible": true
       },
       {
         "id": "note_check_in",
-        "label": "Check-in"
+        "label": "Check-in",
+        "aiEligible": true
       },
       {
         "id": "note_crisis",
-        "label": "Crisis"
+        "label": "Crisis",
+        "aiEligible": false
       },
       {
         "id": "note_referral",
-        "label": "Referral"
+        "label": "Referral",
+        "aiEligible": false
       }
     ],
     "milestoneTypes": [

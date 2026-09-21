@@ -21,7 +21,7 @@ vi.mock('@/lib/fixtures', () => ({
 const actor = {
   id: 'demo_advisor',
   displayName: 'Demo Advisor',
-  role: 'advisor' as const,
+  role: 'career-advisor' as const,
 }
 let dataset: CanonicalDataset
 const studentId = 'stu_advisor_test'

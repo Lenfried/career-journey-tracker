@@ -1,3 +1,4 @@
+import { AiVisibilityBadge } from '@/components/ai-visibility-badge'
 import type { Importance } from '@/lib/canonical'
 import type { RequiredSkillView, StudentSkillView } from '../types'
 import { SkillEditor, type SkillEditorContext } from './skill-editor'
@@ -86,7 +87,10 @@ export function RequiredSkillRow({
         </span>
       </div>
       {skill.rationale ? (
-        <p className="text-muted-foreground mt-1 text-sm">{skill.rationale}</p>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <p className="text-muted-foreground text-sm">{skill.rationale}</p>
+          <AiVisibilityBadge />
+        </div>
       ) : null}
       {/* Where the requirement came from. Without this line a requirement
           appears or disappears when a student changes track and nothing on

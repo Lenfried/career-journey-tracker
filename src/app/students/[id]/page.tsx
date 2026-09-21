@@ -17,7 +17,11 @@ export default async function StudentProfilePage({
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams])
 
-  const actor = await requireActor(['advisor', 'faculty', 'admin'])
+  const actor = await requireActor([
+    'faculty-advisor',
+    'career-advisor',
+    'admin',
+  ])
 
   const student = await getStudent(id)
   if (!student) notFound()

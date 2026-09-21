@@ -7,20 +7,13 @@
 // FormData with a schema from `./schemas.ts`, hand the parsed input to a pure
 // function in `./admin.ts`, persist the result, redirect back.
 //
-// UNGUARDED, ON PURPOSE. Rule 1 in AGENTS.md requires every mutation to be
-// wrapped in `authedAction()`, and that does not exist yet — auth is Phase 2.
-// This is a discussed exception, not an oversight (see the note at the top of
-// `./admin.ts`): the app cannot be deployed anywhere real student data could
-// reach it regardless, and nothing here writes a student record. Wrap these
-// in `authedAction()` the day auth lands, before this app goes anywhere near
-// production data.
-//
 // Per-student writes — markCareerAction(), setCareerPath(),
 // assignCareerMap() — are a separate, later piece of work: a student's own
 // progress and taxonomy choice, not the shared template these edit.
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { authedAction } from '@/lib/authz'
 import type { CareerMapTerm } from '@/lib/canonical'
 import { loadDataset, saveDataset } from '@/lib/fixtures'
 import {
@@ -49,6 +42,7 @@ import {
 const CATALOG_PATH = '/admin/career-map/catalog'
 const GENERAL_PATH = '/admin/career-map/general'
 const TRACKS_PATH = '/admin/career-map/tracks'
+const ROLES = ['faculty-advisor', 'career-advisor', 'admin'] as const
 const specializationPath = (id: string) =>
   `/admin/career-map/specializations/${id}`
 
@@ -65,7 +59,7 @@ function firstIssue(error: { issues: { message: string }[] }): string {
 /* The action catalog                                                          */
 /* -------------------------------------------------------------------------- */
 
-export async function createCareerActionAction(formData: FormData) {
+async function createCareerActionActionImpl(formData: FormData) {
   const parsed = careerActionFormSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) fail(CATALOG_PATH, firstIssue(parsed.error))
 
@@ -78,7 +72,7 @@ export async function createCareerActionAction(formData: FormData) {
   redirect(CATALOG_PATH)
 }
 
-export async function updateCareerActionAction(
+async function updateCareerActionActionImpl(
   actionId: string,
   formData: FormData,
 ) {
@@ -98,7 +92,7 @@ export async function updateCareerActionAction(
   redirect(CATALOG_PATH)
 }
 
-export async function deleteCareerActionAction(actionId: string) {
+async function deleteCareerActionActionImpl(actionId: string) {
   const dataset = loadDataset()
   const [map] = dataset.careerMaps
   if (!map) fail(CATALOG_PATH, 'No career map is published.')
@@ -128,7 +122,7 @@ export async function deleteCareerActionAction(actionId: string) {
  * submitted together, because that is how the form presents it — one page,
  * one save button, not fifty-four round trips.
  */
-export async function updateGeneralMapAction(formData: FormData) {
+async function updateGeneralMapActionImpl(formData: FormData) {
   const dataset = loadDataset()
   const [map] = dataset.careerMaps
   if (!map) fail(GENERAL_PATH, 'No career map is published.')
@@ -159,7 +153,7 @@ export async function updateGeneralMapAction(formData: FormData) {
 /* Specializations                                                             */
 /* -------------------------------------------------------------------------- */
 
-export async function createCareerSpecializationAction(formData: FormData) {
+async function createCareerSpecializationActionImpl(formData: FormData) {
   const parsed = careerSpecializationFormSchema.safeParse(
     Object.fromEntries(formData),
   )
@@ -180,7 +174,7 @@ export async function createCareerSpecializationAction(formData: FormData) {
   redirect(TRACKS_PATH)
 }
 
-export async function updateCareerSpecializationDetailsAction(
+async function updateCareerSpecializationDetailsActionImpl(
   specializationId: string,
   formData: FormData,
 ) {
@@ -223,7 +217,7 @@ export async function updateCareerSpecializationDetailsAction(
   redirect(specializationPath(specializationId))
 }
 
-export async function deleteCareerSpecializationAction(
+async function deleteCareerSpecializationActionImpl(
   specializationId: string,
 ) {
   const dataset = loadDataset()
@@ -244,7 +238,7 @@ export async function deleteCareerSpecializationAction(
 }
 
 /** Saves one overlay card so the board never needs to render the whole catalog. */
-export async function setSpecializationActionOverrideAction(
+async function setSpecializationActionOverrideActionImpl(
   specializationId: string,
   formData: FormData,
 ) {
@@ -299,7 +293,7 @@ export async function setSpecializationActionOverrideAction(
 /* Required skills, per specialization                                         */
 /* -------------------------------------------------------------------------- */
 
-export async function addRequiredSkillAction(
+async function addRequiredSkillActionImpl(
   specializationId: string,
   formData: FormData,
 ) {
@@ -328,7 +322,7 @@ export async function addRequiredSkillAction(
   redirect(specializationPath(specializationId))
 }
 
-export async function removeRequiredSkillAction(
+async function removeRequiredSkillActionImpl(
   specializationId: string,
   skillId: string,
 ) {
@@ -351,3 +345,36 @@ export async function removeRequiredSkillAction(
   revalidatePath(specializationPath(specializationId))
   redirect(specializationPath(specializationId))
 }
+
+function adminAction<Args extends unknown[], Result>(
+  handler: (...args: Args) => Promise<Result>,
+) {
+  return authedAction(ROLES, (_actor, ...args: Args) => handler(...args))
+}
+
+export const createCareerActionAction = adminAction(
+  createCareerActionActionImpl,
+)
+export const updateCareerActionAction = adminAction(
+  updateCareerActionActionImpl,
+)
+export const deleteCareerActionAction = adminAction(
+  deleteCareerActionActionImpl,
+)
+export const updateGeneralMapAction = adminAction(updateGeneralMapActionImpl)
+export const createCareerSpecializationAction = adminAction(
+  createCareerSpecializationActionImpl,
+)
+export const updateCareerSpecializationDetailsAction = adminAction(
+  updateCareerSpecializationDetailsActionImpl,
+)
+export const deleteCareerSpecializationAction = adminAction(
+  deleteCareerSpecializationActionImpl,
+)
+export const setSpecializationActionOverrideAction = adminAction(
+  setSpecializationActionOverrideActionImpl,
+)
+export const addRequiredSkillAction = adminAction(addRequiredSkillActionImpl)
+export const removeRequiredSkillAction = adminAction(
+  removeRequiredSkillActionImpl,
+)

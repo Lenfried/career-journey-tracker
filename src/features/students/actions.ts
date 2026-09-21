@@ -11,7 +11,7 @@ import { loadDataset, saveDataset } from '@/lib/fixtures'
 import { setStudentPathway } from './mutations'
 import { pathwaySelectionSchema } from './schemas'
 
-const ROLES = ['advisor', 'faculty', 'admin'] as const
+const ROLES = ['faculty-advisor', 'career-advisor', 'admin'] as const
 
 export const recordPathwayDecisionAction = authedAction(
   ROLES,

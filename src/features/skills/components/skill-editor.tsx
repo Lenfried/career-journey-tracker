@@ -11,6 +11,7 @@ import {
   PROFICIENCY_LABELS,
   IMPORTANCE_LABELS,
 } from '@/lib/labels'
+import { AiVisibilityBadge } from '@/components/ai-visibility-badge'
 import {
   SessionNoteFields,
   ADVISOR_FIELD_CLASS,
@@ -113,10 +114,13 @@ export function SkillEditor({
           )}
         </div>
         <label className="block space-y-1 text-sm">
-          <span>
-            {list === 'held'
-              ? 'Evidence (optional)'
-              : 'Requirement rationale (optional)'}
+          <span className="flex flex-wrap items-center gap-2">
+            <span>
+              {list === 'held'
+                ? 'Evidence (optional)'
+                : 'Requirement rationale (optional)'}
+            </span>
+            {list === 'required' ? <AiVisibilityBadge /> : null}
           </span>
           <textarea
             name={list === 'held' ? 'evidence' : 'rationale'}

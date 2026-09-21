@@ -7,7 +7,7 @@ import type { AdvisingUpdateState } from '@/features/students/types'
 import { updateStudentSkill, type SkillList } from './mutations'
 
 export const recordStudentSkill = authedAction(
-  ['advisor', 'faculty', 'admin'],
+  ['faculty-advisor', 'career-advisor', 'admin'],
   async (
     actor,
     studentId: string,

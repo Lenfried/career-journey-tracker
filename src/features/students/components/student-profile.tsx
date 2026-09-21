@@ -12,6 +12,8 @@ import { ReadinessChecklist } from '@/features/readiness/components/readiness-ch
 import { getReadinessStatus } from '@/features/readiness/queries'
 import { SkillsGapView } from '@/features/skills/components/skills-gap-view'
 import { getStudentSkills } from '@/features/skills/queries'
+import { AdvisorSummaryPanel } from '@/features/summary/components/advisor-summary-panel'
+import { getSummaryView } from '@/features/summary/queries'
 import { ProfileTabs, type ProfileTab } from './profile-tabs'
 import { StudentProfileHeader } from './student-profile-header'
 import { PathwayEditor } from './pathway-editor'
@@ -49,6 +51,7 @@ export async function StudentProfile({
       {tab === 'milestones' ? <MilestonesTab studentId={student.id} /> : null}
       {tab === 'skills' ? <SkillsTab studentId={student.id} /> : null}
       {tab === 'career-map' ? <CareerMapTab studentId={student.id} /> : null}
+      {tab === 'summary' ? <SummaryTab studentId={student.id} /> : null}
     </>
   )
 }
@@ -129,4 +132,14 @@ async function CareerMapTab({ studentId }: { studentId: string }) {
       <CareerMapTimeline map={map} context={context} />
     </div>
   )
+}
+
+async function SummaryTab({ studentId }: { studentId: string }) {
+  const view = await getSummaryView(studentId)
+
+  // `getSummaryView` returns null only for an unknown id, and the page has
+  // already 404'd on that. Narrowing rather than asserting keeps it honest.
+  if (!view) return null
+
+  return <AdvisorSummaryPanel view={view} />
 }
