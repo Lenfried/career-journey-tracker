@@ -11,6 +11,8 @@ import type {
   StudentRecord,
 } from '@/lib/canonical'
 
+export type AdvisingUpdateState = { error?: string; success?: string }
+
 /** A roster row. */
 export type StudentSummary = {
   id: string

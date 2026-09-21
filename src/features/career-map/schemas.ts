@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import {
   careerMapTermSchema,
+  careerActionStatusSchema,
   EVIDENCE_KINDS,
   importanceSchema,
   skillCategorySchema,
@@ -25,9 +26,10 @@ export {
   studentCareerMapSchema,
 } from '@/lib/canonical'
 
-// Week 2 adds `markCareerActionSchema` and `setCareerPathSchema` here — the
-// same schemas the forms resolve against, once completion is a student-facing
-// write rather than an admin one.
+export const markCareerActionSchema = z.object({
+  status: careerActionStatusSchema,
+  completedCount: z.coerce.number().int().min(0),
+})
 
 /**
  * `"kind:typeId"` from the evidence picker's single `<select>`, or `""` for no
