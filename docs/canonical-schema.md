@@ -97,6 +97,12 @@ specialization. This permits a student to choose a broad direction before
 committing to a narrower path. Progress never keys on either taxonomy level, so
 changing a path does not erase completed work.
 
+In fixture-development mode, the student Career Map tab exposes one advisor
+transaction for changing this assignment and recording the note that explains
+the decision. Assignment timestamps use the server time of that transaction;
+the note's `sessionDate` remains an advisor-entered calendar date. Selecting a
+specialization also selects its parent track.
+
 ### 3a. Skills — student has
 
 | Field               | Type                                                      | Notes                                                  |

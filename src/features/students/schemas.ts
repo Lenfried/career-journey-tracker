@@ -28,4 +28,9 @@ export const studentFiltersSchema = z.object({
   direction: z.enum(['asc', 'desc']).optional().catch(undefined),
 })
 
+export const pathwaySelectionSchema = z.union([
+  z.literal(''),
+  z.string().regex(/^(track|specialization):[^:]+$/, 'Pick a valid pathway'),
+])
+
 export type StudentFiltersInput = z.infer<typeof studentFiltersSchema>

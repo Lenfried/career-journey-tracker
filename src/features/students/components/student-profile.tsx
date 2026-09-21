@@ -14,6 +14,7 @@ import { SkillsGapView } from '@/features/skills/components/skills-gap-view'
 import { getStudentSkills } from '@/features/skills/queries'
 import { ProfileTabs, type ProfileTab } from './profile-tabs'
 import { StudentProfileHeader } from './student-profile-header'
+import { PathwayEditor } from './pathway-editor'
 import type { StudentDetail } from '../types'
 
 /**
@@ -107,5 +108,15 @@ async function SkillsTab({ studentId }: { studentId: string }) {
 }
 
 async function CareerMapTab({ studentId }: { studentId: string }) {
-  return <CareerMapTimeline map={await getCareerMap(studentId)} />
+  const [map, noteTypes] = await Promise.all([
+    getCareerMap(studentId),
+    getNoteTypes(),
+  ])
+  if (!map) return <CareerMapTimeline map={null} />
+  return (
+    <div className="space-y-6">
+      <PathwayEditor studentId={studentId} map={map} noteTypes={noteTypes} />
+      <CareerMapTimeline map={map} />
+    </div>
+  )
 }
