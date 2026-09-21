@@ -38,7 +38,7 @@ export function ProfileTabs({
 }) {
   return (
     <nav aria-label="Student profile sections" className="mb-8 border-b">
-      <ul className="-mb-px flex gap-1">
+      <ul className="-mb-px flex flex-wrap gap-1">
         {PROFILE_TABS.map((tab) => {
           const isActive = tab.id === active
           const count = counts[tab.id]

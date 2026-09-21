@@ -103,6 +103,17 @@ the decision. Assignment timestamps use the server time of that transaction;
 the note's `sessionDate` remains an advisor-entered calendar date. Selecting a
 specialization also selects its parent track.
 
+Opening an action row on the Career Map tab lets an advisor update progress.
+The progress update and advising note are saved together. The note names the
+action, its previous/new status and count, and the advisor's reason.
+`markedAt` is the server save time, distinct from the note's session date;
+`note` on the progress row holds the latest reason. Earlier session notes and
+existing `movedToTerm`/`moveReasonId` values are preserved by progress edits.
+
+`done` records the full target count; `not-started` and `not-applicable` record
+zero. `in-progress` accepts a whole count below the target. The server rejects
+actions no longer on the student's current map.
+
 ### 3a. Skills — student has
 
 | Field               | Type                                                      | Notes                                                  |
@@ -133,6 +144,20 @@ three different skills. Normalisation lives in `normaliseSkillName()` in
 Specialization requirements and advisor-added student requirements are merged.
 When names normalize to the same value, the advisor-added row wins because it
 contains student-specific context. Broad tracks do not own required skills.
+
+On the Skills tab, advisors can add, update, verify, or remove a held skill,
+and assign, edit, or remove a student-specific requirement. Each change
+requires a session date and reason and saves an advising note in the same
+write. Duplicate names within either student list are rejected using
+`normaliseSkillName()`. Opening an unmet requirement prefills a held-skill
+form; it is only recorded as held when the advisor saves it.
+
+Shared specialization requirements are edited in career-map admin. Removing
+a personal requirement may reveal a matching shared requirement. These
+workflows do not add canonical fields or change the schema version.
+AI integrations should continue consuming the feature queries: decision
+history is in advising notes, while progress rows contain only the latest
+state/reason. These workflows do not send note text to any model.
 
 Likely to evolve: **medium**. Names will need real normalisation work once a
 source pre-populates them.

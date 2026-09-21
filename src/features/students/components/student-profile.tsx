@@ -104,7 +104,16 @@ async function MilestonesTab({ studentId }: { studentId: string }) {
 }
 
 async function SkillsTab({ studentId }: { studentId: string }) {
-  return <SkillsGapView skills={await getStudentSkills(studentId)} />
+  const [skills, noteTypes] = await Promise.all([
+    getStudentSkills(studentId),
+    getNoteTypes(),
+  ])
+  return (
+    <SkillsGapView
+      skills={skills}
+      context={{ studentId, noteTypes, today: todayOnCampus() }}
+    />
+  )
 }
 
 async function CareerMapTab({ studentId }: { studentId: string }) {
@@ -112,11 +121,12 @@ async function CareerMapTab({ studentId }: { studentId: string }) {
     getCareerMap(studentId),
     getNoteTypes(),
   ])
-  if (!map) return <CareerMapTimeline map={null} />
+  const context = { studentId, noteTypes, today: todayOnCampus() }
+  if (!map) return <CareerMapTimeline map={null} context={context} />
   return (
     <div className="space-y-6">
       <PathwayEditor studentId={studentId} map={map} noteTypes={noteTypes} />
-      <CareerMapTimeline map={map} />
+      <CareerMapTimeline map={map} context={context} />
     </div>
   )
 }

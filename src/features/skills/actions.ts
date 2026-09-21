@@ -1,17 +1,36 @@
-// skills — actions
-//
-// Writes. Empty on purpose: Phase 1 is the read-only milestone, so there is
-// nothing here yet. Planned for Week 2:
-//
-//   addStudentSkill(), addRequiredSkill() — MVP screen 5
-//
-// Two rules bind whatever lands here:
-//
-//   1. A bare Server Action is a public HTTP endpoint. Every mutation is
-//      wrapped in `authedAction(roles, fn)` from `lib/authz.ts` once
-//      authentication exists (Phase 2). Until then, this app must not be
-//      deployed anywhere a student record could reach it.
-//   2. Input is validated with the Zod schema from `./schemas.ts` — the same
-//      schema the form resolver uses. One definition, both ends.
+'use server'
 
-export {}
+import { authedAction } from '@/lib/authz'
+import { recordAdvisingUpdate } from '@/features/students/advising-update'
+import { AdvisingUpdateError } from '@/features/students/advising-update-error'
+import type { AdvisingUpdateState } from '@/features/students/types'
+import { updateStudentSkill, type SkillList } from './mutations'
+
+export const recordStudentSkill = authedAction(
+  ['advisor', 'faculty', 'admin'],
+  async (
+    actor,
+    studentId: string,
+    list: SkillList,
+    skillId: string | null,
+    _state: AdvisingUpdateState,
+    formData: FormData,
+  ) =>
+    recordAdvisingUpdate(
+      actor,
+      studentId,
+      formData,
+      'student.skill.update',
+      (_dataset, student) => {
+        if (list !== 'held' && list !== 'required')
+          throw new AdvisingUpdateError('Choose a valid skill list.')
+        return updateStudentSkill(
+          student,
+          list,
+          skillId,
+          String(formData.get('intent')),
+          Object.fromEntries(formData),
+        )
+      },
+    ),
+)
