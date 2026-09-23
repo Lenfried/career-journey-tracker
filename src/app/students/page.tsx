@@ -1,6 +1,6 @@
 import { StudentRosterTable } from '@/features/students/components/student-roster-table'
 import { StudentSearch } from '@/features/students/components/student-search'
-import { listStudents } from '@/features/students/queries'
+import { listStudentRoster } from '@/features/students/queries'
 import { studentFiltersSchema } from '@/features/students/schemas'
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -11,11 +11,18 @@ export default async function StudentsPage({
   searchParams: SearchParams
 }) {
   const params = await searchParams
-  const { search } = studentFiltersSchema.parse({
+  const {
+    search,
+    sort = 'name',
+    direction = 'asc',
+  } = studentFiltersSchema.parse({
     search: typeof params.q === 'string' ? params.q : undefined,
+    sort: typeof params.sort === 'string' ? params.sort : undefined,
+    direction:
+      typeof params.direction === 'string' ? params.direction : undefined,
   })
 
-  const students = await listStudents({ search })
+  const students = await listStudentRoster({ search, sort, direction })
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -28,10 +35,15 @@ export default async function StudentsPage({
           </p>
         </div>
 
-        <StudentSearch value={search} />
+        <StudentSearch value={search} sort={sort} direction={direction} />
       </header>
 
-      <StudentRosterTable students={students} search={search} />
+      <StudentRosterTable
+        students={students}
+        search={search}
+        sort={sort}
+        direction={direction}
+      />
     </main>
   )
 }

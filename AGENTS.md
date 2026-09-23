@@ -12,14 +12,15 @@ data in it is fictional.
 
 ## Where the project is right now
 
-**Phase 1: fixture-driven, read-only.** There is no database, no authentication,
-and no real student data. The application reads `fixtures/students.json` and
-renders it. This is deliberate — see `docs/canonical-schema.md` and the
-fixture-driven development plan.
+**Phase 1: fixture-driven development.** There is no database, no real
+authentication, and no real student data. The application reads and writes
+`fixtures/students.json`. This is deliberate — see `docs/canonical-schema.md`
+and the fixture-driven development plan.
 
 What exists: canonical schema, fixture dataset, service-layer reads, dashboard,
-student roster, student profile (overview / notes / milestones / skills / AI
-summary).
+student roster, career-map administration, student profile (overview / notes /
+milestones / skills / career map / AI summary), and fixture-backed advisor
+updates for notes, pathways, career progress, and skills.
 
 The AI advisor summary was pulled forward out of Phase 2 deliberately. It reads
 through the service layer like everything else, caches to a file rather than a
@@ -27,12 +28,13 @@ table, and degrades to labelled sample output with no API key. Its rules are in
 `docs/ai-summary.md` — read that before touching anything under
 `src/features/summary/`, `lib/ai.ts` or `lib/summary-store.ts`.
 
-What does not exist yet, in order: write operations (Week 2), then auth, CSV
-import, analytics, admin, and export (Phase 2).
+What does not exist yet: database persistence, real authentication, CSV import,
+analytics, and export (Phase 2).
 
-Because there is no authentication, **this application must not be deployed
-anywhere a real student record could reach it.** That constraint lifts when
-rule 1 below is actually implemented, not before.
+Because there is no authentication, production student access is disabled by
+`lib/authz.ts`. **This application must not be deployed anywhere a real student
+record could reach it.** That constraint lifts when rule 1 below is backed by a
+real session, not before.
 
 ## Stack
 
@@ -46,6 +48,36 @@ The LiteLLM client is the exception — it is live, behind `lib/ai.ts`, for the
 advisor summary. It is the only module allowed to call a model endpoint.
 
 Runs on a campus Linux VM. Development happens in WSL2 on Windows.
+
+## Skills
+
+Agent skills live in `.agents/skills/`, one directory per skill with a `SKILL.md`
+entrypoint. `.claude/skills/` holds nothing but symlinks to them:
+
+```
+.agents/skills/prisma-cli/SKILL.md            # the real file
+.claude/skills/prisma-cli -> ../../.agents/skills/prisma-cli
+```
+
+All twelve follow this. Add a skill in `.agents/skills/`, then symlink it —
+never the other way round. opencode reads `.agents/skills/` directly; Claude
+Code only reads `.claude/skills/`, which is what the symlink is for.
+
+The entrypoint must be named exactly `SKILL.md` and its `name:` must match the
+directory. A browser-renamed `SKILL (1).md` fails silently — no error, the skill
+just never loads.
+
+Symlinks need `git config core.symlinks true` and Developer Mode on native
+Windows. Inside WSL2 they work as-is. If a skill's file looks like one line of
+text reading `../../.agents/skills/...`, that is what went wrong.
+
+Present: `code-review-and-quality`, `code-simplification`,
+`frontend-ui-engineering`, and nine `prisma-*` API references.
+
+A skill's body loads only when the task matches it. That is what keeps it out of
+this file — put a procedure in a skill, put a rule in here.
+
+## Framework version notes
 
 **Next 16 and React 19 are not the versions you have memorised.** Both diverge
 from what a model trained on Next 13/14 will confidently produce — Server
@@ -93,16 +125,16 @@ this in code review from day one.
 - **`src/features/<name>/` holds all logic**, and every feature has the same
   files: `queries.ts` (reads), `actions.ts` (writes), `schemas.ts` (Zod),
   `types.ts` (view models), `components/`. Do not invent a new shape for a new
-  feature. The seven features are `students`, `goals`, `skills`, `readiness`,
-  `notes`, `milestones`, `dashboard` — one per canonical data group, plus the
-  dashboard, which owns no data and composes the others. `summary` is an eighth
-  of the same kind: it owns no canonical data and composes the rest. It carries
-  one extra file, `prompt.ts`, because a versioned prompt is an artifact rule 6
-  requires us to track and burying it in `queries.ts` hides it.
+  feature. The features are `students`, `goals`, `skills`, `readiness`, `notes`,
+  `milestones`, `career-map`, `dashboard`, and `summary`. Dashboard and summary
+  own no canonical data and compose the rest. Summary carries one extra file,
+  `prompt.ts`, because a versioned prompt is an artifact rule 6 requires us to
+  track and burying it in `queries.ts` hides it.
 - **`src/lib/`** is cross-cutting only. Present: `canonical` (the schema),
   `fixtures` (the data source), `lookups`, `labels`, `dates`, `utils`, `env`,
-  `ai`, `authz` (a placeholder — read the comment block before trusting it), and
-  `summary-store`. Staged for Phase 2: `db`, `auth`, `audit`, `logger`, `csv`.
+  `ai`, `authz` (fixture identity plus a production block), `audit` (an ID-only
+  development seam), and `summary-store`. Staged for Phase 2: `db`, `auth`,
+  persistent audit storage, `logger`, and `csv`.
   `summary-store` has the same standing as `fixtures`: it is a data source, so
   no page and no component may import it.
 - **`fixtures/students.json`** is the dataset. Every student in it covers a
@@ -121,12 +153,12 @@ Each is marked with when it binds. A rule marked _Phase 2_ is not optional later
 1. _(Binding now — the first Server Action was written for the AI summary.)_
    **Every mutation is wrapped in `authedAction(roles, fn)`** from `lib/authz.ts`.
    A bare Server Action is a public HTTP endpoint. No exceptions. The wrapper
-   exists but does not enforce anything yet — there is no authentication to
-   enforce with. It is at every call site so Phase 2 fills in one function
-   instead of auditing every action ever written. This does not relax the rule
-   that the app must not be deployed where a real record could reach it.
-2. _(Phase 2, with rule 1.)_ **Every read of student detail and every write calls
-   `writeAudit()`.** FERPA requires knowing who saw what, when.
+   resolves a fixed fictional advisor in development and blocks production
+   access. Phase 2 replaces that actor with an Auth.js session in one place.
+2. **Every read of student detail and every student-record write calls
+   `writeAudit()`.** The current sink is an ID-only development log; Phase 2
+   replaces it with persistent audit storage. FERPA requires knowing who saw
+   what, when.
 3. _(Phase 2, when Postgres arrives.)_ **Roster queries paginate in Postgres.**
    Never `findMany()` the whole student table and filter in JS. Use an indexed
    `where` with `take`/`skip`. Phase 1 filters ~18 fixture records in memory,

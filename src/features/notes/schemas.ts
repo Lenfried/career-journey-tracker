@@ -1,6 +1,15 @@
-// notes — schemas
+import { z } from 'zod'
+import { calendarDateSchema } from '@/lib/canonical'
 
 export { advisingNoteSchema } from '@/lib/canonical'
 
-// Week 2 adds `saveNoteSchema` here — the same schema the add-note form
-// resolver uses and the one `saveNote()` validates against.
+export const advisingNoteFormSchema = z.object({
+  sessionDate: calendarDateSchema,
+  typeId: z.string().trim().min(1, 'Pick a note type'),
+  content: z.string().trim().min(1, 'Enter a note').max(5000),
+  followUpDate: z
+    .union([calendarDateSchema, z.literal('')])
+    .transform((value) => value || null),
+})
+
+export type AdvisingNoteInput = z.infer<typeof advisingNoteFormSchema>

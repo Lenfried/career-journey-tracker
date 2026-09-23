@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input'
+import type { SortDirection, StudentRosterSort } from '../types'
 
 /**
  * Roster search.
@@ -7,9 +8,19 @@ import { Input } from '@/components/ui/input'
  * The search term lands in the URL, which means a filtered roster is a link an
  * advisor can bookmark or paste to a colleague — and the back button works.
  */
-export function StudentSearch({ value }: { value?: string }) {
+export function StudentSearch({
+  value,
+  sort,
+  direction,
+}: {
+  value?: string
+  sort: StudentRosterSort
+  direction: SortDirection
+}) {
   return (
     <form action="/students" className="flex gap-2">
+      <input type="hidden" name="sort" value={sort} />
+      <input type="hidden" name="direction" value={direction} />
       <Input
         type="search"
         name="q"

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { getStudentSkills } from '@/features/skills/queries'
 import { loadStudent, loadStudents } from '@/lib/fixtures'
 import {
   assembleSummaryInput,
@@ -221,9 +222,10 @@ describe('derived figures', () => {
     const assembled = await input(FULL_STUDENT)
     const record = loadStudent(FULL_STUDENT)
     if (!record) throw new Error('fixture student missing')
+    const skills = await getStudentSkills(FULL_STUDENT)
 
     expect(assembled.milestones.total).toBe(record.milestones.length)
-    expect(assembled.skills.requiredCount).toBe(record.requiredSkills.length)
+    expect(assembled.skills.requiredCount).toBe(skills.requiredSkills.length)
     expect(assembled.skills.coveredCount + assembled.skills.gap.length).toBe(
       assembled.skills.requiredCount,
     )

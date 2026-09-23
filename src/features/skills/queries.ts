@@ -6,13 +6,18 @@ import {
   type RequiredSkill,
   type StudentSkill,
 } from '@/lib/canonical'
-import { loadStudent } from '@/lib/fixtures'
+import { loadCareerSpecialization, loadStudent } from '@/lib/fixtures'
 import {
   IMPORTANCE_LABELS,
   PROFICIENCY_LABELS,
   SKILL_CATEGORY_LABELS,
 } from '@/lib/labels'
-import type { RequiredSkillView, SkillsView, StudentSkillView } from './types'
+import type {
+  RequiredSkillView,
+  SkillsView,
+  SourcedRequiredSkill,
+  StudentSkillView,
+} from './types'
 
 const EMPTY: SkillsView = {
   skills: [],
@@ -21,11 +26,57 @@ const EMPTY: SkillsView = {
   coveredCount: 0,
 }
 
-/** Both skill lists for a student, with the gap derived between them. */
+/**
+ * Both skill lists for a student, with the gap derived between them.
+ *
+ * Required skills come from two places and are merged here: the specialization
+ * the student is on, and anything an advisor added for this student. Change
+ * specialization and the first set swaps; the student's own skills and the
+ * advisor's additions stay put, and the gap recomputes on the next read.
+ */
 export async function getStudentSkills(studentId: string): Promise<SkillsView> {
   const student = loadStudent(studentId)
   if (!student) return EMPTY
-  return deriveSkillsView(student.skills, student.requiredSkills)
+
+  const specialization = loadCareerSpecialization(
+    student.careerMap.specializationId,
+  )
+
+  return deriveSkillsView(
+    student.skills,
+    mergeRequiredSkills(
+      specialization?.requiredSkills ?? [],
+      student.requiredSkills,
+    ),
+    specialization?.label ?? null,
+  )
+}
+
+/**
+ * The specialization's requirements plus the advisor's, de-duplicated by the same
+ * normalisation the gap uses.
+ *
+ * The student's own entry wins a collision. Both lists are written by people;
+ * when an advisor has written a rationale for *this* student next to a skill
+ * the specialization also names, theirs is the one with the context in it.
+ */
+export function mergeRequiredSkills(
+  fromSpecialization: RequiredSkill[],
+  fromStudent: RequiredSkill[],
+): SourcedRequiredSkill[] {
+  const merged = new Map<string, SourcedRequiredSkill>()
+
+  for (const skill of fromSpecialization) {
+    merged.set(normaliseSkillName(skill.name), {
+      ...skill,
+      source: 'specialization',
+    })
+  }
+  for (const skill of fromStudent) {
+    merged.set(normaliseSkillName(skill.name), { ...skill, source: 'student' })
+  }
+
+  return [...merged.values()]
 }
 
 /* -------------------------------------------------------------------------- */
@@ -38,7 +89,8 @@ export async function getStudentSkills(studentId: string): Promise<SkillsView> {
  */
 export function deriveSkillsView(
   skills: StudentSkill[],
-  requiredSkills: RequiredSkill[],
+  requiredSkills: SourcedRequiredSkill[],
+  specializationLabel: string | null = null,
 ): SkillsView {
   // Both sides go through `normaliseSkillName`. Comparing raw strings would
   // report " python " and "Python" as different skills, and the gap display
@@ -72,6 +124,11 @@ export function deriveSkillsView(
       importanceLabel: IMPORTANCE_LABELS[skill.importance],
       rationale: skill.rationale,
       covered: held.has(normaliseSkillName(skill.name)),
+      source: skill.source ?? 'student',
+      sourceLabel:
+        skill.source === 'specialization' && specializationLabel
+          ? `Required by the ${specializationLabel} specialization`
+          : 'Added by an advisor',
     }))
     .sort(byImportanceThenName)
 

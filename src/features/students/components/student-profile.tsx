@@ -1,9 +1,13 @@
+import { CareerMapStrip } from '@/features/career-map/components/career-map-strip'
+import { CareerMapTimeline } from '@/features/career-map/components/career-map-timeline'
+import { getCareerMap, getCareerMapStatus } from '@/features/career-map/queries'
 import { CareerGoalCard } from '@/features/goals/components/career-goal-card'
 import { getStudentGoal } from '@/features/goals/queries'
 import { MilestoneList } from '@/features/milestones/components/milestone-list'
 import { getStudentMilestones } from '@/features/milestones/queries'
 import { NoteList } from '@/features/notes/components/note-list'
-import { getStudentNotes } from '@/features/notes/queries'
+import { getNoteTypes, getStudentNotes } from '@/features/notes/queries'
+import { todayOnCampus } from '@/lib/dates'
 import { ReadinessChecklist } from '@/features/readiness/components/readiness-checklist'
 import { getReadinessStatus } from '@/features/readiness/queries'
 import { SkillsGapView } from '@/features/skills/components/skills-gap-view'
@@ -12,6 +16,7 @@ import { AdvisorSummaryPanel } from '@/features/summary/components/advisor-summa
 import { getSummaryView } from '@/features/summary/queries'
 import { ProfileTabs, type ProfileTab } from './profile-tabs'
 import { StudentProfileHeader } from './student-profile-header'
+import { PathwayEditor } from './pathway-editor'
 import type { StudentDetail } from '../types'
 
 /**
@@ -45,15 +50,17 @@ export async function StudentProfile({
       {tab === 'notes' ? <NotesTab studentId={student.id} /> : null}
       {tab === 'milestones' ? <MilestonesTab studentId={student.id} /> : null}
       {tab === 'skills' ? <SkillsTab studentId={student.id} /> : null}
+      {tab === 'career-map' ? <CareerMapTab studentId={student.id} /> : null}
       {tab === 'summary' ? <SummaryTab studentId={student.id} /> : null}
     </>
   )
 }
 
 async function OverviewTab({ studentId }: { studentId: string }) {
-  const [goal, readiness] = await Promise.all([
+  const [goal, readiness, careerMap] = await Promise.all([
     getStudentGoal(studentId),
     getReadinessStatus(studentId),
+    getCareerMapStatus(studentId),
   ])
 
   return (
@@ -66,6 +73,13 @@ async function OverviewTab({ studentId }: { studentId: string }) {
       </section>
 
       <section>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight">
+          Career map
+        </h2>
+        <CareerMapStrip studentId={studentId} status={careerMap} />
+      </section>
+
+      <section>
         <h2 className="mb-3 text-lg font-semibold tracking-tight">Readiness</h2>
         <ReadinessChecklist readiness={readiness} />
       </section>
@@ -74,7 +88,18 @@ async function OverviewTab({ studentId }: { studentId: string }) {
 }
 
 async function NotesTab({ studentId }: { studentId: string }) {
-  return <NoteList notes={await getStudentNotes(studentId)} />
+  const [notes, noteTypes] = await Promise.all([
+    getStudentNotes(studentId),
+    getNoteTypes(),
+  ])
+  return (
+    <NoteList
+      studentId={studentId}
+      notes={notes}
+      noteTypes={noteTypes}
+      today={todayOnCampus()}
+    />
+  )
 }
 
 async function MilestonesTab({ studentId }: { studentId: string }) {
@@ -82,7 +107,31 @@ async function MilestonesTab({ studentId }: { studentId: string }) {
 }
 
 async function SkillsTab({ studentId }: { studentId: string }) {
-  return <SkillsGapView skills={await getStudentSkills(studentId)} />
+  const [skills, noteTypes] = await Promise.all([
+    getStudentSkills(studentId),
+    getNoteTypes(),
+  ])
+  return (
+    <SkillsGapView
+      skills={skills}
+      context={{ studentId, noteTypes, today: todayOnCampus() }}
+    />
+  )
+}
+
+async function CareerMapTab({ studentId }: { studentId: string }) {
+  const [map, noteTypes] = await Promise.all([
+    getCareerMap(studentId),
+    getNoteTypes(),
+  ])
+  const context = { studentId, noteTypes, today: todayOnCampus() }
+  if (!map) return <CareerMapTimeline map={null} context={context} />
+  return (
+    <div className="space-y-6">
+      <PathwayEditor studentId={studentId} map={map} noteTypes={noteTypes} />
+      <CareerMapTimeline map={map} context={context} />
+    </div>
+  )
 }
 
 async function SummaryTab({ studentId }: { studentId: string }) {

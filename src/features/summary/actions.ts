@@ -2,13 +2,9 @@
 
 // summary — actions
 //
-// The first Server Action in this codebase, which is the moment rule 1 in
-// AGENTS.md starts binding: a bare Server Action is a public HTTP endpoint.
-// It is wrapped in `authedAction()` from `lib/authz.ts`. That wrapper does not
-// enforce anything yet — there is no authentication to enforce with — but it is
-// in place at the call site from the first action onward, so Phase 2 fills in
-// one function rather than auditing every action ever written. Read the comment
-// block in `lib/authz.ts` before relying on it for anything.
+// A bare Server Action is a public HTTP endpoint. This one is wrapped in
+// `authedAction()` from `lib/authz.ts`, which supplies the fictional development
+// actor and blocks production until a real authenticated session replaces it.
 //
 // This is not a mutation of a student record. It writes to the summary cache
 // only. It does, however, spend tokens against the campus proxy on request,
@@ -17,6 +13,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { generateJson } from '@/lib/ai'
+import { writeAudit } from '@/lib/audit'
 import { authedAction, type ActionResult } from '@/lib/authz'
 import { writeSummary } from '@/lib/summary-store'
 import {
@@ -55,7 +52,7 @@ const FAILURE_MESSAGES: Record<string, string> = {
  */
 export const generateSummary = authedAction(
   ['faculty-advisor', 'career-advisor', 'admin'],
-  async (studentId: string): Promise<ActionResult<{ stub: boolean }>> => {
+  async (actor, studentId: string): Promise<ActionResult<{ stub: boolean }>> => {
     const input = await assembleSummaryInput(studentId)
 
     if (!input) {
@@ -63,6 +60,12 @@ export const generateSummary = authedAction(
       // in a browser and there is no reason for it to carry one.
       return { ok: false, error: 'That student could not be found.' }
     }
+
+    await writeAudit({
+      actorId: actor.id,
+      action: 'student.summary.generate',
+      studentId,
+    })
 
     const fingerprint = fingerprintInput(input)
     const generatedAt = new Date().toISOString()

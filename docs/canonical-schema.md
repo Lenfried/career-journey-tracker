@@ -59,6 +59,7 @@ Those are not configuration.
 | `enrollmentStatus` | `enrolled` \| `leave-of-absence` \| `graduated` \| `withdrawn` |                                                                  |
 | `advisor`          | string \| null                                                 | Assigned advisor's name                                          |
 | `bio`              | string \| null                                                 | Free-text advisor context                                        |
+| `entryTerm`        | academic term (`YYYYFA`, `YYYYSP`, or `YYYYSU`)                | First term at York; anchors the start of this student's map      |
 | `updatedAt`        | timestamp                                                      | Drives the dashboard "recently updated" list                     |
 
 Likely to evolve: **low**. These are stable across any source.
@@ -80,6 +81,43 @@ common, expected state, not an error.
 
 Likely to evolve: **low**. Advisor-entered, source-independent.
 
+### 2b. Career-map assignment and progress
+
+The career map has a two-level taxonomy: a broad **track** and an optional,
+focused **specialization** beneath it. See
+[`career-map-taxonomy.md`](./career-map-taxonomy.md) for the full template
+contract, migration notes, and the AI-integration boundary.
+
+| Field                 | Type              | Notes                                                           |
+| --------------------- | ----------------- | --------------------------------------------------------------- |
+| `trackId`             | string \| null    | → top-level `careerTracks`; `null` means still exploring        |
+| `trackSetAt`          | timestamp \| null | Set exactly when `trackId` is set                               |
+| `specializationId`    | string \| null    | → `careerSpecializations`; must be a child of `trackId`         |
+| `specializationSetAt` | timestamp \| null | Set exactly when `specializationId` is set                      |
+| `progress`            | progress[]        | Sparse advisor-confirmed state, keyed only by stable `actionId` |
+
+A specialization requires a track, but a track does not require a
+specialization. This permits a student to choose a broad direction before
+committing to a narrower path. Progress never keys on either taxonomy level, so
+changing a path does not erase completed work.
+
+In fixture-development mode, the student Career Map tab exposes one advisor
+transaction for changing this assignment and recording the note that explains
+the decision. Assignment timestamps use the server time of that transaction;
+the note's `sessionDate` remains an advisor-entered calendar date. Selecting a
+specialization also selects its parent track.
+
+Opening an action row on the Career Map tab lets an advisor update progress.
+The progress update and advising note are saved together. The note names the
+action, its previous/new status and count, and the advisor's reason.
+`markedAt` is the server save time, distinct from the note's session date;
+`note` on the progress row holds the latest reason. Earlier session notes and
+existing `movedToTerm`/`moveReasonId` values are preserved by progress edits.
+
+`done` records the full target count; `not-started` and `not-applicable` record
+zero. `in-progress` accepts a whole count below the target. The server rejects
+actions no longer on the student's current map.
+
 ### 3a. Skills — student has
 
 | Field               | Type                                                      | Notes                                                  |
@@ -91,7 +129,7 @@ Likely to evolve: **low**. Advisor-entered, source-independent.
 | `evidence`          | string \| null                                            | Where the skill came from — a course, a job, a project |
 | `verifiedByAdvisor` | boolean                                                   |                                                        |
 
-### 3b. Skills — role requires
+### 3b. Skills — path or advisor requires
 
 | Field        | Type                                         | Notes                        |
 | ------------ | -------------------------------------------- | ---------------------------- |
@@ -106,6 +144,24 @@ student has a skill whose _normalised_ name matches — trimmed and lowercased.
 Without that, `Python`, `python `, and `Python` from two different advisors are
 three different skills. Normalisation lives in `normaliseSkillName()` in
 `src/lib/canonical.ts` so read and write use the same rule.
+
+Specialization requirements and advisor-added student requirements are merged.
+When names normalize to the same value, the advisor-added row wins because it
+contains student-specific context. Broad tracks do not own required skills.
+
+On the Skills tab, advisors can add, update, verify, or remove a held skill,
+and assign, edit, or remove a student-specific requirement. Each change
+requires a session date and reason and saves an advising note in the same
+write. Duplicate names within either student list are rejected using
+`normaliseSkillName()`. Opening an unmet requirement prefills a held-skill
+form; it is only recorded as held when the advisor saves it.
+
+Shared specialization requirements are edited in career-map admin. Removing
+a personal requirement may reveal a matching shared requirement. These
+workflows do not add canonical fields or change the schema version.
+AI integrations should continue consuming the feature queries: decision
+history is in advising notes, while progress rows contain only the latest
+state/reason. These workflows do not send note text to any model.
 
 Likely to evolve: **medium**. Names will need real normalisation work once a
 source pre-populates them.
@@ -142,6 +198,10 @@ Likely to evolve: **low**.
 note (by `sessionDate`) has a `followUpDate` strictly before today in
 `America/New_York`. Only the most recent note counts — an old note with a stale
 follow-up date is history, not a task.
+
+The student Notes tab supports creating, editing, and deleting notes against the
+fixture dataset. `recordedBy` comes from the current fixture-mode advisor rather
+than form input, and editing a note does not change its original recorder.
 
 Likely to evolve: **low**.
 
@@ -198,4 +258,7 @@ sent". See `docs/ai-summary.md`.
    drifted.
 
 Schema changes are expected. Make them in version control, in one commit, with a
-note on what real-data observation prompted the change.
+note on what real-data observation prompted the change. During the current
+experimental/demo phase, a validated product-model decision can also prompt a
+change; document the migration and downstream integration impact in the same
+commit.
